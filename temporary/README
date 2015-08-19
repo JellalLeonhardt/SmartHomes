@@ -1,0 +1,37 @@
+文件结构：
+.
+├── output --------------------------- .o文件暂存处
+├── client_s
+│   ├── BSD.c ------------------------ 硬件相关函数(socket)
+│   ├── BSD.h
+│   ├── client_interface.c ----------- 硬件无关函数(发送/接收)
+│   ├── client_interface.h
+│   ├── cam_pack
+│   │   ├── CameraDriver.c ----------- 摄像头驱动
+│   │   ├── camera.h
+│   │   ├── cam_global_var.h
+│   │   └── makefile
+│   └── makefile
+├── server_s
+│   ├── server_interface.c ----------- 封装部分函数(各种初始化)
+│   ├── server_interface.h
+│   ├── display
+│   │   ├── display.c ---------------- gtk+图形界面
+│   │   ├── display.h
+│   │   └── makefile
+│   └── makefile
+├── client.c
+├── server.c
+├── format.h ------------------------- 协议：数据结构与#define's
+├── makefile
+└── README
+
+5 directories, 19 files
+
+	(生成client和server两个程序)
+
+
+注意：
+	1、摄像头默认为/dev/video0
+	2、为支持通讯协议，用64位系统编译时，gcc加了-m32选项
+	3、测试时，开一个终端运行./server xxxx，再开另一个终端运行./client xxxx；连接上后，server会弹出摄像头图像
