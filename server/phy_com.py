@@ -9,7 +9,7 @@ import sys
 import socket
 import struct
 
-PACK_FORMAT = '@bbhi'
+PACK_FORMAT = '@bbhhH'
 
 MAX_PACKAGE_SIZE = 2048
 MIN_PACKAGE_SIZE = 12
@@ -55,8 +55,9 @@ class PhyPack:
         self.type = 0
         self.length = 0
         self.code = 0
+        self.checksum = 0
         if len(buf) >= 8:
-            self.ID, self.type, self.length, self.code = struct.unpack(PACK_FORMAT, buf[0:8])
+            self.ID, self.type, self.length, self.code, self.checksum = struct.unpack(PACK_FORMAT, buf[0:8])
         if len(buf) >= 12:
             self.data = buf[8:]
         else:
@@ -115,7 +116,11 @@ class DeviceConn:
         print('[INFO]send data:\t' + str(buf))
         return True
 
-    def __recv_head(self):
+    def __checkHead(self, pack):
+        return (pack.length >= MIN_PACKAGE_SIZE and pack.length <=
+                MAX_PACKAGE_SIZE) and (pack.ID + pack.type + pack.length + pack.code == pack.checksum)
+
+    def __recvHead(self):
         try:
             buf = self.__sock.recv(8)
         except socket.error as e:
@@ -129,10 +134,10 @@ class DeviceConn:
     def recv(self):
         buf = b''
 
-        pack = self.__recv_head()
-        while pack.length < MIN_PACKAGE_SIZE or pack.length > MAX_PACKAGE_SIZE:    #Recieved a wrong head
+        pack = self.__recvHead()
+        while self.__checkHead(pack) == False:    #Recieved a wrong head
             print('[WARNING]Wrong head data! Finding new head...')
-            pack = self.__recv_head()
+            pack = self.__recvHead()
 
         last_len = pack.length - 8
         
