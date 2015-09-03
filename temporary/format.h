@@ -45,10 +45,11 @@
  **************************************************/
 typedef struct tag_mypackhead
 {
-	char	ID;
-	char	type;
-	short	size;
-	int		code;
+	signed char      ID;
+	signed char      type;
+	signed short     size;
+	signed short     code;
+	unsigned short   checksum;
 }com_pack_head;
 
 /**************************************************
@@ -58,8 +59,8 @@ typedef struct tag_mypack{
 	com_pack_head			head;
 	union tag_packdata
 	{
-		char			   *data_p;
-		int					data32;
+		signed int		data32;
+		signed char		data8[4];
 	}
 							packdata;
 
@@ -99,12 +100,87 @@ typedef struct tag_mypack{
                 /* “控制代号” */
 /* LED control */
 	/* 下面2个的“控制内容”为，LED灯的序号 */
-#define CTRL_TYPE_LED_OFF			0
-#define CTRL_TYPE_LED_ON			1
+#define 	CTRL_TYPE_LED_OFF					0
+#define 	CTRL_TYPE_LED_ON					1
 	/* 下面3个的“控制内容”，  置0 */
-#define CTRL_TYPE_LED_OFF_ALL		2
-#define CTRL_TYPE_LED_ON_ALL		3
-#define CTRL_TYPE_GET_LED_STATUS	4
+#define 	CTRL_TYPE_LED_OFF_ALL				2
+#define 	CTRL_TYPE_LED_ON_ALL				3
+#define 	CTRL_TYPE_GET_LED_STATUS			4
+
+/* CAMERA control */
+	/* 改变分辨率 */
+#define		CTRL_TYPE_CAMERA_CHANGE_SIZE		5
+		/* 直接引用ov2640.h的 JPEG_***x*** 的定义 */
+#define		CAMERA_SIZE_176X144					0
+#define		CAMERA_SIZE_320X240					1
+#define		CAMERA_SIZE_352X288					2
+#define		CAMERA_SIZE_640X480					3
+#define		CAMERA_SIZE_800X600					4
+#define		CAMERA_SIZE_1024X768				5
+
+	/* 白平衡 */
+#define 	CTRL_TYPE_CAMERA_WHITE_BALANCE		6
+		/* 自动白平衡 */
+#define		CAMERA_WHITE_BALANCE_AUTO			0x00000000
+		/* 阳光 */
+#define		CAMERA_WHITE_BALANCE_SUNNY			0x0054415e
+		/* 阴天 */
+#define		CAMERA_WHITE_BALANCE_CLOUDY			0x004f4165
+		/* 办公室 */
+#define		CAMERA_WHITE_BALANCE_OFFICE			0x00664152
+		/* 家庭 */
+#define		CAMERA_WHITE_BALANCE_HOME			0x00713f42
+
+	/* 特殊效果 */
+#define		CTRL_TYPE_CAMERA_EFFECTS			7
+		/* 普通 */
+#define		CAMERA_EFFECTS_NORMAL				0x00808000
+		/* 黑白 */
+#define		CAMERA_EFFECTS_BLACK_WHITE			0x00808018
+		/* 偏蓝 */
+#define		CAMERA_EFFECTS_BLUE					0x0040a018
+		/* 偏绿 */
+#define		CAMERA_EFFECTS_GREEN				0x00404018
+		/* 偏红 */
+#define		CAMERA_EFFECTS_RED					0x00c04018
+		/* 复古 */
+#define		CAMERA_EFFECTS_ANTUQUE				0x00a64018
+		/* 反色 */
+#define		CAMERA_EFFECTS_NEGATUVE				0x00808040
+		/* 黑白+反色 */
+#define		CAMERA_COLOR_TYPE_B_W_NEGATIVE		0x00808058
+
+	/* 曝光等级 */
+#define		CTRL_TYPE_CAMERA_EXPLOSURE			8
+#define		CAMERA_EXPLOSURE_0					0x00601820
+#define		CAMERA_EXPLOSURE_1					0x00701c34
+#define		CAMERA_EXPLOSURE_2					0x0081383e
+#define		CAMERA_EXPLOSURE_3					0x00814048
+#define		CAMERA_EXPLOSURE_4					0x00925058
+
+	/* 色彩饱和度 */
+#define		CTRL_TYPE_CAMERA_SATURATION			9
+#define		CAMERA_SATURATION_HIGHEST			0x00006868
+#define		CAMERA_SATURATION_HIGH				0x00005858
+#define		CAMERA_SATURATION_MEDIUM			0x00004848
+#define		CAMERA_SATURATION_LOW				0x00003838
+#define		CAMERA_SATURATION_LOWEST			0x00002828
+
+	/* 图片亮度 */
+#define		CTRL_TYPE_CAMERA_LIGHTNESS			10
+#define		CAMERA_LIGHTNESS_HIGHEST			0x00000040
+#define		CAMERA_LIGHTNESS_HIGH				0x00000030
+#define		CAMERA_LIGHTNESS_MEDIUM				0x00000020
+#define		CAMERA_LIGHTNESS_LOW				0x00000010
+#define		CAMERA_LIGHTNESS_LOWEST				0x00000000
+
+	/* 对比度 */
+#define		CTRL_TYPE_CAMERA_CONTRAST			11
+#define		CAMERA_CONTRAST_HIGNEST				0x00000c28
+#define		CAMERA_CONTRAST_HIGH				0x00001624
+#define		CAMERA_CONTRAST_MEDIUM				0x00002020
+#define		CAMERA_CONTRAST_LOW					0x00002a1c
+#define		CAMERA_CONTRAST_LOWEST				0x00003418
 
 
 /**************************************************
