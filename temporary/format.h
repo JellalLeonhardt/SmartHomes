@@ -108,8 +108,16 @@ typedef struct tag_mypack{
 #define 	CTRL_TYPE_GET_LED_STATUS			4
 
 /* CAMERA control */
+	/* 拍一张图片 */
+#define		CTRL_TYPE_CAMERA_SHUT				5
+
+	/* 开关图像数据流 */
+#define		CTRL_TYPE_CAMERA_STREAM				6
+#define		CAMERA_STREAM_OFF					0
+#define		CAMERA_STREAM_ON					1
+
 	/* 改变分辨率 */
-#define		CTRL_TYPE_CAMERA_CHANGE_SIZE		5
+#define		CTRL_TYPE_CAMERA_CHANGE_SIZE		7
 		/* 直接引用ov2640.h的 JPEG_***x*** 的定义 */
 #define		CAMERA_SIZE_176X144					0
 #define		CAMERA_SIZE_320X240					1
@@ -119,7 +127,7 @@ typedef struct tag_mypack{
 #define		CAMERA_SIZE_1024X768				5
 
 	/* 白平衡 */
-#define 	CTRL_TYPE_CAMERA_WHITE_BALANCE		6
+#define 	CTRL_TYPE_CAMERA_WHITE_BALANCE		8
 		/* 自动白平衡 */
 #define		CAMERA_WHITE_BALANCE_AUTO			0x00000000
 		/* 阳光 */
@@ -132,7 +140,7 @@ typedef struct tag_mypack{
 #define		CAMERA_WHITE_BALANCE_HOME			0x00713f42
 
 	/* 特殊效果 */
-#define		CTRL_TYPE_CAMERA_EFFECTS			7
+#define		CTRL_TYPE_CAMERA_EFFECTS			9
 		/* 普通 */
 #define		CAMERA_EFFECTS_NORMAL				0x00808000
 		/* 黑白 */
@@ -151,7 +159,7 @@ typedef struct tag_mypack{
 #define		CAMERA_COLOR_TYPE_B_W_NEGATIVE		0x00808058
 
 	/* 曝光等级 */
-#define		CTRL_TYPE_CAMERA_EXPLOSURE			8
+#define		CTRL_TYPE_CAMERA_EXPLOSURE			10
 #define		CAMERA_EXPLOSURE_0					0x00601820
 #define		CAMERA_EXPLOSURE_1					0x00701c34
 #define		CAMERA_EXPLOSURE_2					0x0081383e
@@ -159,7 +167,7 @@ typedef struct tag_mypack{
 #define		CAMERA_EXPLOSURE_4					0x00925058
 
 	/* 色彩饱和度 */
-#define		CTRL_TYPE_CAMERA_SATURATION			9
+#define		CTRL_TYPE_CAMERA_SATURATION			11
 #define		CAMERA_SATURATION_HIGHEST			0x00006868
 #define		CAMERA_SATURATION_HIGH				0x00005858
 #define		CAMERA_SATURATION_MEDIUM			0x00004848
@@ -167,7 +175,7 @@ typedef struct tag_mypack{
 #define		CAMERA_SATURATION_LOWEST			0x00002828
 
 	/* 图片亮度 */
-#define		CTRL_TYPE_CAMERA_LIGHTNESS			10
+#define		CTRL_TYPE_CAMERA_LIGHTNESS			12
 #define		CAMERA_LIGHTNESS_HIGHEST			0x00000040
 #define		CAMERA_LIGHTNESS_HIGH				0x00000030
 #define		CAMERA_LIGHTNESS_MEDIUM				0x00000020
@@ -175,7 +183,7 @@ typedef struct tag_mypack{
 #define		CAMERA_LIGHTNESS_LOWEST				0x00000000
 
 	/* 对比度 */
-#define		CTRL_TYPE_CAMERA_CONTRAST			11
+#define		CTRL_TYPE_CAMERA_CONTRAST			13
 #define		CAMERA_CONTRAST_HIGNEST				0x00000c28
 #define		CAMERA_CONTRAST_HIGH				0x00001624
 #define		CAMERA_CONTRAST_MEDIUM				0x00002020
