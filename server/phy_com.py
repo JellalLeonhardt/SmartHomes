@@ -29,6 +29,92 @@ CTRL_LED_OFF_ALL = 2
 CTRL_LED_ON_ALL = 3
 CTRL_LED_GET_STATUS = 4
 
+#------------------------------------------------------
+
+# CAMERA control
+	# 拍一张图片
+CTRL_TYPE_CAMERA_SHUT = 5
+
+	# 开关图像数据流
+CTRL_TYPE_CAMERA_STREAM = 6
+CAMERA_STREAM_OFF = 0
+CAMERA_STREAM_ON = 1
+
+	# 改变分辨率
+CTRL_TYPE_CAMERA_CHANGE_SIZE = 7
+CAMERA_SIZE_176X144 = 0
+CAMERA_SIZE_320X240 = 1
+CAMERA_SIZE_352X288 = 2
+CAMERA_SIZE_640X480 = 3
+CAMERA_SIZE_800X600 = 4
+CAMERA_SIZE_1024X768 = 5
+
+	# 白平衡
+CTRL_TYPE_CAMERA_WHITE_BALANCE = 8
+		# 自动白平衡
+CAMERA_WHITE_BALANCE_AUTO = 0x00000000
+		# 阳光
+CAMERA_WHITE_BALANCE_SUNNY = 0x0054415e
+		# 阴天
+CAMERA_WHITE_BALANCE_CLOUDY = 0x004f4165
+		# 办公室
+CAMERA_WHITE_BALANCE_OFFICE = 0x00664152
+		# 家庭
+CAMERA_WHITE_BALANCE_HOME = 0x00713f42
+
+	# 特殊效果
+CTRL_TYPE_CAMERA_EFFECTS = 9
+		# 普通
+CAMERA_EFFECTS_NORMAL = 0x00808000
+		# 黑白
+CAMERA_EFFECTS_BLACK_WHITE = 0x00808018
+		# 偏蓝
+CAMERA_EFFECTS_BLUE = 0x0040a018
+		# 偏绿
+CAMERA_EFFECTS_GREEN = 0x00404018
+		# 偏红
+CAMERA_EFFECTS_RED = 0x00c04018
+		# 复古
+CAMERA_EFFECTS_ANTUQUE = 0x00a64018
+		# 反色
+CAMERA_EFFECTS_NEGATUVE = 0x00808040
+		# 黑白+反色 
+CAMERA_COLOR_TYPE_B_W_NEGATIVE = 0x00808058
+
+	# 曝光等级 
+CTRL_TYPE_CAMERA_EXPLOSURE = 10
+CAMERA_EXPLOSURE_0 = 0x00601820
+CAMERA_EXPLOSURE_1 = 0x00701c34
+CAMERA_EXPLOSURE_2 = 0x0081383e
+CAMERA_EXPLOSURE_3 = 0x00814048
+CAMERA_EXPLOSURE_4 = 0x00925058
+
+	# 色彩饱和度 
+CTRL_TYPE_CAMERA_SATURATION = 11
+CAMERA_SATURATION_HIGHEST = 0x00006868
+CAMERA_SATURATION_HIGH = 0x00005858
+CAMERA_SATURATION_MEDIUM = 0x00004848
+CAMERA_SATURATION_LOW = 0x00003838
+CAMERA_SATURATION_LOWEST = 0x00002828
+
+	# 图片亮度 
+CTRL_TYPE_CAMERA_LIGHTNESS = 12
+CAMERA_LIGHTNESS_HIGHEST = 0x00000040
+CAMERA_LIGHTNESS_HIGH = 0x00000030
+CAMERA_LIGHTNESS_MEDIUM = 0x00000020
+CAMERA_LIGHTNESS_LOW = 0x00000010
+CAMERA_LIGHTNESS_LOWEST = 0x00000000
+
+	# 对比度 
+CTRL_TYPE_CAMERA_CONTRAST = 13
+CAMERA_CONTRAST_HIGNEST = 0x00000c28
+CAMERA_CONTRAST_HIGH = 0x00001624
+CAMERA_CONTRAST_MEDIUM = 0x00002020
+CAMERA_CONTRAST_LOW = 0x00002a1c
+CAMERA_CONTRAST_LOWEST = 0x00003418
+
+#------------------------------------------------------
+
 #ack code
 ACK_LED = 5
 
@@ -47,15 +133,17 @@ class PhyPack:
         if type(buf) != bytes:
             print('[ERROR]Wrong data type!')
             return
-        if len(buf) < 8 and len(buf) != 0:
-            print("[ERROR]Wrong Package haed length!!! length = " + str(len(buf)))
-            return
 
         self.ID = SERVER_ID
         self.type = 0
         self.length = 0
         self.code = 0
         self.checksum = 0
+
+        if len(buf) < 8 and len(buf) != 0:
+            print("[ERROR]Wrong Package haed length!!! length = " + str(len(buf)))
+            return
+
         if len(buf) >= 8:
             self.ID, self.type, self.length, self.code, self.checksum = struct.unpack(PACK_FORMAT, buf[0:8])
         if len(buf) >= 12:
@@ -95,11 +183,12 @@ class DeviceConn:
     def __init__(self, sock, addr):
         self.__sock = sock
         self.__addr = addr
-        self.__ctrl_packs = []
-        self.__data_packs = []
 
     def send(self, pack):
-        buf = struct.pack(PACK_FORMAT, pack.ID, pack.type, pack.length, pack.code)
+        if self.__sock == None:
+            return False
+
+        buf = struct.pack(PACK_FORMAT, pack.ID, pack.type, pack.length, pack.code, pack.checksum)
         buf += pack.data
         last_len = len(buf)
         if last_len != pack.length:
@@ -132,6 +221,9 @@ class DeviceConn:
         return PhyPack(buf)
 
     def recv(self):
+        if self.__sock == None:
+            return None
+
         buf = b''
 
         pack = self.__recvHead()
@@ -156,7 +248,7 @@ class DeviceConn:
                 print('[ERROR]cannot recv package data!!!')
                 print(e)
                 return None
-            print('[INFO]recv data:\t' + str(temp_buf))
+            #print('[INFO]recv data:\t' + str(temp_buf))
 
             print('[INFO]recv data len: ' + str(len(temp_buf)))
             last_len -= len(temp_buf)
@@ -164,6 +256,8 @@ class DeviceConn:
         return pack
      
     def close(self):
+        if self.__sock == None:
+            return
         self.__sock.close()
 
     def get_addr(self):
