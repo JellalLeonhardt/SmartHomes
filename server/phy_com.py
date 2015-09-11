@@ -8,6 +8,8 @@
 import sys
 import socket
 import struct
+import thread
+import logging
 
 PACK_FORMAT = '@bbhhH'
 
@@ -157,32 +159,54 @@ class PhyPack:
         return 'ID: ' + str(self.ID) + ', type: ' + str(self.type) + ', len: ' + str(self.length) + ', code: ' + str(self.code)
 
 class DeviceServer:
-    def __init__(self, addr, port):
+    def __init__(self, addr, port, logger):
         self.__backlog = 5
         self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.logger = logger
         
         try:
             self.__sock.bind((addr, port))
         except socket.error as e:
-            print('[ERROR]bind error!')
-            print(e)
+            self.logger.error('bind error!')
+            self.logger.error(e)
             self.__sock = None
 
     def listen(self):
         if self.__sock == None:
-            print("[ERROR]inavalid socket")
+            self.logger.error("inavalid socket")
             return
         self.__sock.listen(self.__backlog)
 
     def accept(self):
         sock, addr = self.__sock.accept();
-        return DeviceConn(sock, addr)
+        return DeviceConn(sock, addr, self.logger)
 
 class DeviceConn:
-    def __init__(self, sock, addr):
+    def __init__(self, sock, addr, logger):
         self.__sock = sock
         self.__addr = addr
+        self.logger = logger
+        self.__handler_dic = {}
+        self.
+        
+
+    def __del__(self):
+        self.__recv_thread.   
+
+    def registHandler(self, handle_func, pack_type):
+        self.__handler_dic[pack_type] = handle_func;
+
+    def __recvThread(self):
+        while self.__run_mark:
+            pack = self.__recv()
+            if pack == None:
+                self.logger.warning('Device disconnected!')
+                break
+            
+            if pack.type in self.__handler_dic.keys():
+                self.__handler_dic[pack.type]()
+
 
     def send(self, pack):
         if self.__sock == None:
@@ -192,17 +216,17 @@ class DeviceConn:
         buf += pack.data
         last_len = len(buf)
         if last_len != pack.length:
-            print('[WARNING]Wrong package length')
+            self.logger.warning('Wrong package length')
 
         try:
             while last_len != 0:
                 last_len -= self.__sock.send(buf, last_len)
         except socket.error as e:
-            print('[ERROR]connot send the package')
-            print(e)
+            self.logger.error('connot send the package')
+            self.logger.error(e)
             return False
 
-        print('[INFO]send data:\t' + str(buf))
+        self.logger.info('send data:\t' + str(buf))
         return True
 
     def __checkHead(self, pack):
@@ -213,14 +237,14 @@ class DeviceConn:
         try:
             buf = self.__sock.recv(8)
         except socket.error as e:
-            print('[ERROR]cannot recv package head data!!!')
-            print(e)
+            self.logger.error('cannot recv package head data!!!')
+            self.logger.error(e)
             return None
 
-        print('[INFO]recv head:\t' + str(buf))
+        self.logger.info('recv head:\t' + str(buf))
         return PhyPack(buf)
 
-    def recv(self):
+    def __recv(self):
         if self.__sock == None:
             return None
 
@@ -228,13 +252,13 @@ class DeviceConn:
 
         pack = self.__recvHead()
         while self.__checkHead(pack) == False:    #Recieved a wrong head
-            print('[WARNING]Wrong head data! Finding new head...')
+            self.logger.warning('Wrong head data! Finding new head...')
             pack = self.__recvHead()
 
         last_len = pack.length - 8
         
         if last_len < 0:
-            print('[WARNING]Disconnected!')
+            self.logger.warning('Disconnected!')
             return None
         
         #Recieve data
@@ -245,12 +269,12 @@ class DeviceConn:
                 temp_buf = self.__sock.recv(last_len)
                 pack.data += temp_buf
             except socket.error as e:
-                print('[ERROR]cannot recv package data!!!')
-                print(e)
+                self.logger.error('cannot recv package data!!!')
+                self.logger.error(e)
                 return None
             #print('[INFO]recv data:\t' + str(temp_buf))
 
-            print('[INFO]recv data len: ' + str(len(temp_buf)))
+            self.logger.info('recv data len: ' + str(len(temp_buf)))
             last_len -= len(temp_buf)
 
         return pack
@@ -274,7 +298,19 @@ def builtFile(packages):
 
 
 def main(argv):
-    server = DeviceServer(10086)
+    logger = logging.getLogger('phy_com')
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler('phy_com.log')
+    fh.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('[%(name)s][%(levelname)s]: %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
+    server = DeviceServer('localhost', 10086, logger)
     server.listen()
     
     data = b''

@@ -20,7 +20,7 @@ SERVER_CFLAGS = 	`pkg-config --cflags --libs gtk+-2.0`
 CLIENT_OBJS = $(OBJ_DIR)/client.o $(OBJ_DIR)/client_interface.o $(OBJ_DIR)/camera.o $(OBJ_DIR)/BSD.o
 SERVER_OBJS = $(OBJ_DIR)/server.o $(OBJ_DIR)/server_interface.o $(OBJ_DIR)/display.o
 
-all: client server
+all:get_ready client server
 	@echo 'Finish'
 
 get_ready:

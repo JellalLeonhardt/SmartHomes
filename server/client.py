@@ -16,10 +16,10 @@ def main(argv):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
-        sock.connect(('25.0.0.109', 10086))
+        sock.connect(('localhost', 10086))
     except socket.error as e:
         print('cannot connect!')
-        print (e)
+        print(e)
         return -1
 
     conn = phy_com.DeviceConn(sock, 'localhost')
