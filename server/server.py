@@ -23,6 +23,20 @@ data_lock = _thread.allocate_lock()
 info_dic = { 0: (0, 0, 0)}
 info_lock = _thread.allocate_lock()
 
+#init global logger
+logger = logging.getLogger('server')
+logger.setLevel(logging.DEBUG)
+fh = logging.FileHandler('server.log')
+fh.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('[%(name)s][%(levelname)s]: %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+logger.addHandler(fh)
+logger.addHandler(ch)
+
+
 @route('/picture')
 def send_pic():
     dev_id = int(request.query.ID)
@@ -140,12 +154,28 @@ def conn_thread(conn, addr):
 
 def run_phy_server(addr, port):
     print('[INFO]Listening at ' + str(addr) + ':' + str(port))
-    server = phy_com.DeviceServer(addr, port)
+    server = phy_com.DeviceServer(addr, port, logger)
     server.listen()
 
     while True:
         conn = server.accept()
-        _thread.start_new_thread(conn_thread, (conn, conn.get_addr()))
+        conn.registHandler(phy_com.PACK_TYPE_DATA, dataPackHandler)
+        conn.registHandler(phy_com.PACK_TYPE_ACK, ackPackHandler)
+        conn.registHandler(phy_com.PACK_TYPE_REQ, reqPackHandler)
+        conn.registHandler(phy_com.PACK_TYPE_DEFAULT, defualtPackHandler)
+        conn.startRecvData()
+
+def dataPackHandler(pack):
+    pass
+
+def ackPackHandler(pack):
+    pass
+
+def reqPackHandler(pack):
+    pass
+
+def defualtPackHandler(pack):
+    pass
 
 def main(argv):
     _thread.start_new_thread(run_phy_server, (HOST_ADDR, PORT_PHY))

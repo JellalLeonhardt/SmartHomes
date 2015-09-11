@@ -9,9 +9,22 @@ import sys
 import phy_com
 import socket
 import struct
+import logging
 
 def main(argv):
     print('hello world')
+    logger = logging.getLogger('client')
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler('client.log')
+    fh.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('[%(name)s][%(levelname)s]: %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -22,9 +35,11 @@ def main(argv):
         print(e)
         return -1
 
-    conn = phy_com.DeviceConn(sock, 'localhost')
-    pack1 = phy_com.PhyPack(struct.pack('@bbhii', 1, phy_com.PACK_TYPE_DATA, 12, 1, 91))
-    pack2 = phy_com.PhyPack(struct.pack('@bbhii', 1, phy_com.PACK_TYPE_DATA, 12, phy_com.DATA_END_PACK, 92))
+    conn = phy_com.DeviceConn(sock, 'localhost', logger)
+    pack1 = phy_com.PhyPack(struct.pack(phy_com.PACK_FORMAT + 'i', 1,
+        phy_com.PACK_TYPE_DATA, 12, 1, 1 + 12 + 1 + phy_com.PACK_TYPE_DATA, 91))
+    pack2 = phy_com.PhyPack(struct.pack(phy_com.PACK_FORMAT + 'i', 1,
+        phy_com.PACK_TYPE_DATA, 12, phy_com.DATA_END_PACK, 1 + 12 - 1 + phy_com.PACK_TYPE_DATA, 92))
     conn.send(pack1)
     conn.send(pack2)
     while True:

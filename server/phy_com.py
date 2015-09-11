@@ -8,7 +8,7 @@
 import sys
 import socket
 import struct
-import thread
+import _thread
 import logging
 
 PACK_FORMAT = '@bbhhH'
@@ -16,9 +16,12 @@ PACK_FORMAT = '@bbhhH'
 MAX_PACKAGE_SIZE = 2048
 MIN_PACKAGE_SIZE = 12
 
+MAX_WRONG_HAED = MAX_PACKAGE_SIZE / 8
+
 SERVER_ID = 0
 
 #package type code
+PACK_TYPE_DEFAULT = -128
 PACK_TYPE_CTRL = -2
 PACK_TYPE_DATA = -3
 PACK_TYPE_ACK = -4
@@ -188,24 +191,52 @@ class DeviceConn:
         self.__addr = addr
         self.logger = logger
         self.__handler_dic = {}
-        self.
-        
+        self.__thread_stop = True
 
     def __del__(self):
-        self.__recv_thread.   
+        if not self.__thread_stop:
+            self.stopRecvData()  
 
-    def registHandler(self, handle_func, pack_type):
+    def registHandler(self, pack_type, handle_func):
         self.__handler_dic[pack_type] = handle_func;
 
-    def __recvThread(self):
-        while self.__run_mark:
+    def startRecvData(self):
+        if not self.__thread_stop:
+            self.logger.warning('try to start recv thread while it has beenrunning')
+            return
+
+        self.__thread_stop = False
+        _thread.start_new_thread(self.__recvThread, (None, None))
+
+    def stopRecvData(self):
+        if self.__thread_stop:
+            self.logger.warning('try to stop recv thread while it had beenstoped')
+            return
+
+        self.__thread_stop = True
+        #wait for thread
+        while self.__thread_stop:
+            pass
+
+        self.__thread_stop = True
+
+    def __recvThread(self, arg1, arg2):
+        arg1 = arg2
+        while not self.__thread_stop:
             pack = self.__recv()
             if pack == None:
                 self.logger.warning('Device disconnected!')
-                break
-            
+                self.__thread_stop = True
+                return
+
+            #Call the handler if registed
             if pack.type in self.__handler_dic.keys():
-                self.__handler_dic[pack.type]()
+                self.__handler_dic[pack.type](pack)
+            elif PACK_TYPE_DEFAULT in self.__handler_dic.keys():
+                self.__handler_dic[PACK_TYPE_DEFAULT](pack)
+
+        #mark the thread had exit
+        self.__thread_stop = False
 
 
     def send(self, pack):
@@ -249,10 +280,16 @@ class DeviceConn:
             return None
 
         buf = b''
+        wrong_head_counter = 0
 
         pack = self.__recvHead()
         while self.__checkHead(pack) == False:    #Recieved a wrong head
             self.logger.warning('Wrong head data! Finding new head...')
+            #Limit numbers of wrong head
+            wrong_head_counter += 1
+            if wrong_head_counter >= MAX_WRONG_HAED:
+                self.logger.warning('Too many wrong head! Maybe disconnected!')
+                return None
             pack = self.__recvHead()
 
         last_len = pack.length - 8
@@ -318,19 +355,20 @@ def main(argv):
     while True:
         conn = server.accept()
         print('connected!')
-        pack = conn.recv()
-        print('head: ')
-        print(pack)
-    
-        if pack.type == PACK_TYPE_DATA :
-            while pack.code != DATA_END_PACK:
-                data += pack.data
-                pack = conn.recv()
-            data += pack.data
         
-        print('data: ')
-        print(data)
+        conn.registHandler(PACK_TYPE_DATA, dataPackHandler)
+        conn.startRecvData()
+        
         #conn.close()
+
+recv_data = b''
+def dataPackHandler(pack):
+    global recv_data
+    recv_data += pack.data
+    if pack.code == DATA_END_PACK:
+        print("data: ")
+        print(recv_data)
+        recv_data = b''
 
 if __name__ == '__main__':
     main(sys.argv)
