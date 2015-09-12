@@ -11,6 +11,8 @@ import socket
 import struct
 import logging
 
+ID = 0
+
 def main(argv):
     print('hello world')
     logger = logging.getLogger('client')
@@ -36,9 +38,16 @@ def main(argv):
         return -1
 
     conn = phy_com.DeviceConn(sock, 'localhost', logger)
-    pack1 = phy_com.PhyPack(struct.pack(phy_com.PACK_FORMAT + 'i', 1,
+    conn.registHandler(phy_com.PACK_TYPE_CTRL, ctrlHandler)
+    conn.startRecvData()
+
+    while ID == 0:
+        pass
+
+    print("ID: ", str(ID))
+    pack1 = phy_com.PhyPack(struct.pack(phy_com.PACK_FORMAT + 'i', ID,
         phy_com.PACK_TYPE_DATA, 12, 1, 1 + 12 + 1 + phy_com.PACK_TYPE_DATA, 91))
-    pack2 = phy_com.PhyPack(struct.pack(phy_com.PACK_FORMAT + 'i', 1,
+    pack2 = phy_com.PhyPack(struct.pack(phy_com.PACK_FORMAT + 'i', ID,
         phy_com.PACK_TYPE_DATA, 12, phy_com.DATA_END_PACK, 1 + 12 - 1 + phy_com.PACK_TYPE_DATA, 92))
     conn.send(pack1)
     conn.send(pack2)
@@ -46,6 +55,10 @@ def main(argv):
         pass
     #conn.close()
     pass
+
+def ctrlHandler(pack, conn_data):
+    global ID
+    ID = struct.unpack(phy_com.DATA_FORMAT, pack.data)[0]
 
 if __name__ == '__main__':
     main(sys.argv)

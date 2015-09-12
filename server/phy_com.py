@@ -12,6 +12,7 @@ import _thread
 import logging
 
 PACK_FORMAT = '@bbhhH'
+DATA_FORMAT = '@i'
 
 MAX_PACKAGE_SIZE = 2048
 MIN_PACKAGE_SIZE = 12
@@ -33,6 +34,8 @@ CTRL_LED_ON = 1
 CTRL_LED_OFF_ALL = 2
 CTRL_LED_ON_ALL = 3
 CTRL_LED_GET_STATUS = 4
+
+CTRL_ID_SET = 32767 
 
 #------------------------------------------------------
 
@@ -126,27 +129,33 @@ ACK_LED = 5
 #make the last data package
 DATA_END_PACK = -1
 
+#default error data code
+ERR_DEFAULT_CODE = 0xeeeeeeee
+
 class PhyState:
     def __init__(self):
         self.led_status = [0 for i in range(0,8)]
-        self.picture_data = b''
+        self.pic_data = b''
+        self.update = 0 
         
 class PhyPack:
-    def __init__(self, buf):
-        print('[INFO]make package:\t' + str(buf))
-        print('[INFO]data length:\t' + str(len(buf)))
+    def __init__(self, buf = b''):
+        #print('[INFO]make package:\t' + str(buf))
+        #print('[INFO]data length:\t' + str(len(buf)))
         if type(buf) != bytes:
-            print('[ERROR]Wrong data type!')
+            #print('[ERROR]Wrong data type!')
             return
 
-        self.ID = SERVER_ID
+        self.ID = 0 
         self.type = 0
         self.length = 0
         self.code = 0
         self.checksum = 0
 
-        if len(buf) < 8 and len(buf) != 0:
-            print("[ERROR]Wrong Package haed length!!! length = " + str(len(buf)))
+        buf_len = len(buf)
+
+        if (buf_len < 8 and buf_len != 0) or (buf_len > 8 and buf_len < 12):
+            #print("[ERROR]Wrong Package haed length!!! length = " + str(len(buf)))
             return
 
         if len(buf) >= 8:
@@ -154,15 +163,37 @@ class PhyPack:
         if len(buf) >= 12:
             self.data = buf[8:]
         else:
-            self.data = struct.pack('i', 0)
+            self.data = struct.pack(DATA_FORMAT, 0)
 
-        print('[INFO]package head:\t' + str(self))
+        #print('[INFO]package head:\t' + str(self))
 
     def __str__(self):
         return 'ID: ' + str(self.ID) + ', type: ' + str(self.type) + ', len: ' + str(self.length) + ', code: ' + str(self.code)
 
+    def calcChecksum(self):
+        self.checksum = self.ID + self.type + self.length + self.code
+
+    def setData(self, data):
+        if type(data) == int:
+            self.data = struct.pack(DATA_FORMAT, data)
+        elif type(data) == bytes:
+            self.data = data
+        else:
+            self.data = struct.pack(DATA_FORMAT, ERR_DEFAULT_CODE)
+
+    def getData(self):
+        if self.length == MIN_PACKAGE_SIZE:
+            return struct.unpack(DATA_FORMAT, self.data)[0]
+        else:
+            return self.data
+
 class DeviceServer:
-    def __init__(self, addr, port, logger):
+    def __init__(self, addr, port, server_ID, logger):
+        self.__ID = server_ID
+        if server_ID < -128 or server_ID > 127:
+            logger.error('Server invalid ID! Using defualt ID: ' + str(SERVER_ID))
+            self.__ID = SERVER_ID
+
         self.__backlog = 5
         self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -185,10 +216,14 @@ class DeviceServer:
         sock, addr = self.__sock.accept();
         return DeviceConn(sock, addr, self.logger)
 
+    def getSerID(self):
+        return self.__ID
+
 class DeviceConn:
     def __init__(self, sock, addr, logger):
         self.__sock = sock
         self.__addr = addr
+        self.data = PhyState()
         self.logger = logger
         self.__handler_dic = {}
         self.__thread_stop = True
@@ -231,9 +266,9 @@ class DeviceConn:
 
             #Call the handler if registed
             if pack.type in self.__handler_dic.keys():
-                self.__handler_dic[pack.type](pack)
+                self.__handler_dic[pack.type](pack, self.data)
             elif PACK_TYPE_DEFAULT in self.__handler_dic.keys():
-                self.__handler_dic[PACK_TYPE_DEFAULT](pack)
+                self.__handler_dic[PACK_TYPE_DEFAULT](pack, self.data)
 
         #mark the thread had exit
         self.__thread_stop = False
@@ -242,7 +277,8 @@ class DeviceConn:
     def send(self, pack):
         if self.__sock == None:
             return False
-
+        
+        pack.calcChecksum()
         buf = struct.pack(PACK_FORMAT, pack.ID, pack.type, pack.length, pack.code, pack.checksum)
         buf += pack.data
         last_len = len(buf)
@@ -259,6 +295,21 @@ class DeviceConn:
 
         self.logger.info('send data:\t' + str(buf))
         return True
+
+    def setDevID(self, server_ID, dev_ID):
+        if dev_ID < -128 or dev_ID > 127:
+            self.logger.error("Trying to set an invalid ID!")
+            return False
+        
+        pack = PhyPack()
+        pack.ID = server_ID
+        pack.type = PACK_TYPE_CTRL
+        pack.length = MIN_PACKAGE_SIZE
+        pack.code = CTRL_ID_SET
+        pack.setData(dev_ID)
+
+        return self.send(pack)
+
 
     def __checkHead(self, pack):
         return (pack.length >= MIN_PACKAGE_SIZE and pack.length <=
@@ -321,7 +372,7 @@ class DeviceConn:
             return
         self.__sock.close()
 
-    def get_addr(self):
+    def getAddr(self):
         return self.__addr
 
 def builtFile(packages):
@@ -347,7 +398,7 @@ def main(argv):
     logger.addHandler(fh)
     logger.addHandler(ch)
 
-    server = DeviceServer('localhost', 10086, logger)
+    server = DeviceServer('localhost', 10086, 88, logger)
     server.listen()
     
     data = b''
@@ -357,18 +408,17 @@ def main(argv):
         print('connected!')
         
         conn.registHandler(PACK_TYPE_DATA, dataPackHandler)
+        conn.setDevID(server.getSerID(), 0x2b)
         conn.startRecvData()
         
         #conn.close()
 
-recv_data = b''
-def dataPackHandler(pack):
-    global recv_data
-    recv_data += pack.data
+def dataPackHandler(pack, conn_data):
+    conn_data.pic_data += pack.data
     if pack.code == DATA_END_PACK:
         print("data: ")
-        print(recv_data)
-        recv_data = b''
+        print(conn_data.pic_data)
+        conn_data.pic_data = b''
 
 if __name__ == '__main__':
     main(sys.argv)
