@@ -9,6 +9,7 @@ import sys
 import socket
 import struct
 import _thread
+import threading
 import logging
 
 PACK_FORMAT = '@bbhhH'
@@ -136,7 +137,7 @@ class PhyState:
     def __init__(self):
         self.led_status = [0 for i in range(0,8)]
         self.pic_data = b''
-        self.update = 0 
+        self.sem_update = threading.Semaphore() 
         
 class PhyPack:
     def __init__(self, buf = b''):
@@ -241,6 +242,7 @@ class DeviceConn:
             return
 
         self.__thread_stop = False
+        self.data.sem_update.acquire()
         _thread.start_new_thread(self.__recvThread, (None, None))
 
     def stopRecvData(self):

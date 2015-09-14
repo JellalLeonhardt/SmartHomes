@@ -92,12 +92,13 @@ def led_get_state():
     if not result:
         return template('<b>{{info}}</b>', info = r_info)
 
-    time_out = TIME_OUT
-    while conn_dic[dev_id].data.update == 0:
-        time.sleep(0.001)
-        time_out -= 1
-        if time_out >= 0:
-            return template('<b>{{info}}</b>', info = "Device Time Out!")
+    conn_dic[dev_id].data.sem_update.acquire()
+#    time_out = TIME_OUT
+#    while conn_dic[dev_id].data.update == 0:
+#        time.sleep(0.001)
+#        time_out -= 1
+#        if time_out >= 0:
+#            return template('<b>{{info}}</b>', info = "Device Time Out!")
 
     r_info = str(conn_dic[dev_id].data.led_status)
     if conn_dic[dev_id].data.update == 0:
@@ -230,7 +231,8 @@ def ackPackHandler(pack, conn_data):
         for i in range(8):
             if (ack & (0x01 << i)) > 0:
                 conn_data.led_status[i] = 1
-        conn_data.update += 1
+#        conn_data.update += 1
+        conn_data.sem_update.release()
     else:
         logger.warning('Wrong ack code! code = ' + str(pack.code))
 
