@@ -43,6 +43,8 @@ def getHTML(url):
         print(e)
         return ""
 
+    print("Status Code: "+str(fp.status));
+
     data = fp.read()
     if fp.info().get('Content-Encoding') == 'gzip':
         data = gzip.decompress(data)
@@ -92,6 +94,8 @@ def getRawWeatherInfo(citycode):
     if fp.info().get('Content-Encoding') == 'gzip':
         data = gzip.decompress(data)
     html = data.decode("utf-8")
+
+    print(html)
 
     info = json.loads(html[html.find('{', 1):])
     return info
