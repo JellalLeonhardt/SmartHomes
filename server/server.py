@@ -84,27 +84,27 @@ EXPLOSURE = {
         }
 
 SATURATION = {
-        'highest': phy_com.CAMERA_SATURATION_HIGHEST,
-        'high': phy_com.CAMERA_SATURATION_HIGH,
-        'medium': phy_com.CAMERA_SATURATION_MEDIUM,
-        'low': phy_com.CAMERA_SATURATION_LOW,
-        'lowest': phy_com.CAMERA_SATURATION_LOWEST,
+        '0': phy_com.CAMERA_SATURATION_HIGHEST,
+        '1': phy_com.CAMERA_SATURATION_HIGH,
+        '2': phy_com.CAMERA_SATURATION_MEDIUM,
+        '3': phy_com.CAMERA_SATURATION_LOW,
+        '4': phy_com.CAMERA_SATURATION_LOWEST,
         }
 
 LIGHTNESS = {
-        'highest': phy_com.CAMERA_LIGHTNESS_HIGHEST,
-        'high': phy_com.CAMERA_LIGHTNESS_HIGH,
-        'medium': phy_com.CAMERA_LIGHTNESS_MEDIUM,
-        'low': phy_com.CAMERA_LIGHTNESS_LOW,
-        'lowest': phy_com.CAMERA_LIGHTNESS_LOWEST,
+        '0': phy_com.CAMERA_LIGHTNESS_HIGHEST,
+        '1': phy_com.CAMERA_LIGHTNESS_HIGH,
+        '2': phy_com.CAMERA_LIGHTNESS_MEDIUM,
+        '3': phy_com.CAMERA_LIGHTNESS_LOW,
+        '4': phy_com.CAMERA_LIGHTNESS_LOWEST,
         }
 
 CONTRAST = {
-        'highest': phy_com.CAMERA_CONTRAST_HIGHEST,
-        'high': phy_com.CAMERA_CONTRAST_HIGH,
-        'medium': phy_com.CAMERA_CONTRAST_MEDIUM,
-        'low': phy_com.CAMERA_CONTRAST_LOW,
-        'lowest': phy_com.CAMERA_CONTRAST_LOWEST,
+        '0': phy_com.CAMERA_CONTRAST_HIGHEST,
+        '1': phy_com.CAMERA_CONTRAST_HIGH,
+        '2': phy_com.CAMERA_CONTRAST_MEDIUM,
+        '3': phy_com.CAMERA_CONTRAST_LOW,
+        '4': phy_com.CAMERA_CONTRAST_LOWEST,
         }
 
 response = {
@@ -154,13 +154,15 @@ def ledStatus():
     if not result:
         return template('<b>{{info}}</b>', info = r_info)
 
-    conn_dic[dev_id].data.sem_update.acquire()
-#    time_out = TIME_OUT
-#    while conn_dic[dev_id].data.update == 0:
-#        time.sleep(0.001)
-#        time_out -= 1
-#        if time_out >= 0:
-#            return template('<b>{{info}}</b>', info = "Device Time Out!")
+
+    r_info = response
+    time_out = TIME_OUT
+    while not conn_dic[dev_id].data.sem_update.acquire(False):
+        time.sleep(0.001)
+        time_out -= 1
+        if time_out <= 0:
+            r_info['returnMsg'] = 'Device Time Out!'
+            return r_info
 
     r_info = str(conn_dic[dev_id].data.led_status)
 #    if conn_dic[dev_id].data.update == 0:
