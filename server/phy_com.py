@@ -203,13 +203,13 @@ class DeviceServer:
         try:
             self.__sock.bind((addr, port))
         except socket.error as e:
-            self.logger.error('bind error!')
-            self.logger.error(e)
+            self.logger.critical('bind error!')
+            self.logger.critical(e)
             self.__sock = None
 
     def listen(self):
         if self.__sock == None:
-            self.logger.error("inavalid socket")
+            self.logger.critical("inavalid socket")
             return
         self.__sock.listen(self.__backlog)
 
@@ -362,7 +362,6 @@ class DeviceConn:
                 self.logger.error('cannot recv package data!!!')
                 self.logger.error(e)
                 return None
-            #print('[INFO]recv data:\t' + str(temp_buf))
 
             self.logger.info('recv data len: ' + str(len(temp_buf)))
             last_len -= len(temp_buf)
