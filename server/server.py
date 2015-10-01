@@ -39,7 +39,7 @@ logger.setLevel(logging.DEBUG)
 fh = logging.FileHandler('server.log')
 fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 formatter = logging.Formatter('[%(asctime)s][%(name)s][%(levelname)s]: %(message)s')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
@@ -177,6 +177,7 @@ def getPicture():
     if dev_id in data_dic.keys():
         return data_dic[dev_id]
     else:
+        logger.warning("Require ID " + str(dev_id) + ", and data list is " + str(data_dic.keys()))
         return template('<b>{{info}}</b>', info = 'Device Not Found!')
 
 @route('/camera/xrandr')
@@ -187,7 +188,7 @@ def camera_xrandr():
     if not xrandr in XRANDR.keys():
         pass
 
-    result, r_info = sendCmd(dev_id, phy_com.CTRL_TYPE_CAMERA_CHANGE_SIZE, XRANDR[xrandr])
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CHANGE_SIZE, XRANDR[xrandr])
     return r_info
 
 @route('/camera/white')
@@ -236,7 +237,7 @@ def camera_lightness(ID, lightness):
     dev_id = int(request.query.ID)
     lightness = request.query.lightness
     
-    result, r_info = sendCmd(dev_id, phy_com.CTRL_TYPE_CAMERA_LIGHTNESS, LIGHTNESS[lightness])
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_LIGHTNESS, LIGHTNESS[lightness])
     return r_info
 
 @route('/camera/contrast')
@@ -244,7 +245,7 @@ def camera_contrast(ID, contrast):
     dev_id = int(request.query.ID)
     contrast = request.query.contrast
     
-    result, r_info = sendCmd(dev_id, phy_com.CTRL_TYPE_CAMERA_CONTRAST, CONTRAST[contrast])
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CONTRAST, CONTRAST[contrast])
     return r_info
 
 def sendCmd(dev_id, cmd_code, cmd_data):
@@ -274,11 +275,11 @@ def sendCmd(dev_id, cmd_code, cmd_data):
     return result, r_info
 
 def run_phy_server(addr, ID):
-    logger.info('Listening at ' + str(addr[0]) + ':' + str(addr[1]))
+    logger.info('ID: ' + str(ID) + ', Listening at ' + str(addr[0]) + ':' + str(addr[1]))
     server = phy_com.DeviceServer(addr[0], addr[1], ID, logger)
     server.listen()
 
-    ID_counter = SERVER_ID + 1
+    ID_counter = ID + 1
     while True:
         conn = server.accept()
         logger.info(str(conn.getAddr()) + ' connected!')
@@ -311,8 +312,9 @@ def run_phy_server(addr, ID):
         sendCmd(ID_counter - 1, phy_com.CTRL_CAMERA_STREAM, phy_com.CAMERA_STREAM_ON)
         conn.startRecvData()
 
+pic_counter = 0
 def dataPackHandler(pack, conn_data):
-    global data_dic, data_lock
+    global data_dic, data_lock, pic_counter
     conn_data.pic_data += pack.data
     if pack.code == phy_com.DATA_END_PACK:
         data_lock.acquire()
@@ -320,6 +322,8 @@ def dataPackHandler(pack, conn_data):
         data_lock.release()
         
         logger.debug("Get data: " + str(conn_data.pic_data))
+        pic_counter += 1
+        logger.info("Get picture: " + str(pic_counter) + " at dev " + str(pack.ID))
 
         conn_data.pic_data = b''
 
@@ -352,8 +356,8 @@ def main(argv):
         port_phy = int(argv[3])
         server_id = int(argv[4])
 
-        global SERVER_ID
-        SERVER_ID = server_id
+#        global SERVER_ID
+#        SERVER_ID = server_id
     else:
         print("Usage: python server.py host_addr http_port phy_port server_ID")
         return
