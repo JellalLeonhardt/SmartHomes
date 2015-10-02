@@ -36,7 +36,7 @@ conn_lock = _thread.allocate_lock()
 #init global logger
 logger = logging.getLogger('server')
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler('server.log')
+fh = logging.RotatingFileHandler('server.log', 'w', 1024*1024*100, 10)
 fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
@@ -66,13 +66,13 @@ WHITE_BALANCE = {
 
 EFFECTS = {
         'normal': phy_com.CAMERA_EFFECTS_NORMAL,
-        'black_white': phy_com.CAMERA_EFFECTS_BLACK_WHITE,
+        'blackwhite': phy_com.CAMERA_EFFECTS_BLACK_WHITE,
         'blue': phy_com.CAMERA_EFFECTS_BLUE,
         'green': phy_com.CAMERA_EFFECTS_GREEN,
         'red': phy_com.CAMERA_EFFECTS_RED,
         'antuque': phy_com.CAMERA_EFFECTS_ANTUQUE,
         'negative': phy_com.CAMERA_EFFECTS_NEGATIVE,
-        'b_w_negative': phy_com.CAMERA_EFFECTS_B_W_NEGATIVE,
+        'bwnegative': phy_com.CAMERA_EFFECTS_B_W_NEGATIVE,
         }
 
 EXPLOSURE = {
@@ -107,18 +107,12 @@ CONTRAST = {
         '4': phy_com.CAMERA_CONTRAST_LOWEST,
         }
 
-response = {
-        'returnState': 'F',
-        'returnMsg': '',
-        }
-
 @route('/device/list')
 def getDevList():
-    devs = ''
+    devs = [] 
     for dev_id in dev_list.values():
-        devs += str(dev_id) + ','
-    r_info = response
-    r_info['devList'] = devs
+        devs.append(str(dev_id))
+    r_info = buildResponse(True, '', 'devList', devs)
     return r_info
 
 @route('/led/singleswitch')
@@ -152,19 +146,20 @@ def ledStatus():
     result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
     
     if not result:
-        return template('<b>{{info}}</b>', info = r_info)
-
-
-    r_info = response
+        return r_info
+ 
     time_out = TIME_OUT
     while not conn_dic[dev_id].data.sem_update.acquire(False):
         time.sleep(0.001)
         time_out -= 1
         if time_out <= 0:
-            r_info['returnMsg'] = 'Device Time Out!'
-            return r_info
+            return buildResponse(False, 'Device Time Out!') 
 
-    r_info = str(conn_dic[dev_id].data.led_status)
+    led_status = [] 
+    for i in range(0, len(conn_dic[dev_id].data.led_status)):
+        led_status.append({'id': i, 'status:': conn_dic[dev_id].data.led_status[i]})
+
+    r_info = buildResponse(True, '', 'LEDStatus', led_status)
 #    if conn_dic[dev_id].data.update == 0:
 #        conn_dic[dev_id].data.update = 1
 #    conn_dic[dev_id].data.update -= 1
@@ -174,11 +169,12 @@ def ledStatus():
 @route('/camera/picture')
 def getPicture():
     dev_id = int(request.query.ID)
+
     if dev_id in data_dic.keys():
         return data_dic[dev_id]
     else:
         logger.warning("Require ID " + str(dev_id) + ", and data list is " + str(data_dic.keys()))
-        return template('<b>{{info}}</b>', info = 'Device Not Found!')
+        return buildResponse(False, 'Device Not Found!') 
 
 @route('/camera/xrandr')
 def camera_xrandr():
@@ -186,7 +182,7 @@ def camera_xrandr():
     xrandr = request.query.xrandr
 
     if not xrandr in XRANDR.keys():
-        pass
+        return buildResponse(False, 'Wrong Parameter Value!')
 
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CHANGE_SIZE, XRANDR[xrandr])
     return r_info
@@ -197,7 +193,7 @@ def camera_whitebalance():
     white = request.query.white
     
     if not white in WHITE_BALANCE.keys():
-        pass
+        return buildResponse(False, 'Wrong Parameter Value!')
 
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_WHITE_BALANCE, WHITE_BALANCE[white])
     return r_info
@@ -208,7 +204,7 @@ def camera_effect():
     effect = request.query.effect
     
     if not effect in EFFECTS.keys():
-        pass
+        return buildResponse(False, 'Wrong Parameter Value!')
 
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_EFFECTS, EFFECTS[effect])
     return r_info
@@ -219,7 +215,7 @@ def camera_explosure():
     exp = request.query.exp
     
     if not exp in EXPLOSURE.keys():
-        pass
+        return buildResponse(False, 'Wrong Parameter Value!')
 
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_EXPLOSURE, EXPLOSURE[exp])
     return r_info
@@ -228,6 +224,9 @@ def camera_explosure():
 def camera_saturation(ID, sat):
     dev_id = int(request.query.ID)
     sat = request.query.sat
+
+    if not sat in SATURATION.keys():
+        return buildResponse(False, 'Wrong Parameter Value!')
     
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_SATURATION, SATURATION[sat])
     return r_info
@@ -237,6 +236,9 @@ def camera_lightness(ID, lightness):
     dev_id = int(request.query.ID)
     lightness = request.query.lightness
     
+    if not lightness in LIGHTNESS.keys():
+        return buildResponse(False, 'Wrong Parameter Value!')
+    
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_LIGHTNESS, LIGHTNESS[lightness])
     return r_info
 
@@ -244,6 +246,9 @@ def camera_lightness(ID, lightness):
 def camera_contrast(ID, contrast):
     dev_id = int(request.query.ID)
     contrast = request.query.contrast
+    
+    if not contrast in CONTRAST.keys():
+        return buildResponse(False, 'Wrong Parameter Value!')
     
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CONTRAST, CONTRAST[contrast])
     return r_info
@@ -256,23 +261,30 @@ def sendCmd(dev_id, cmd_code, cmd_data):
     pack.code = cmd_code
     pack.setData(cmd_data)
 
-    r_info = response
-    
     if dev_id in conn_dic.keys():
         result = conn_dic[dev_id].send(pack)
     else:
-        result = False
         logger.warning('Acquiring unavaliable device! Acquiring dev ' + str(dev_id))
-        r_info['returnMsg'] = "Device Not Found!"
-        return result, r_info
+        return False, buildResponse(False, 'Device Not Found!')
     
     if not result:
         logger.error('Cmd send Error!')
-        r_info['returnMsg'] = "Cannot send the command!"
-    else:
-        r_info['returnState'] = 'S'
+        return result, buildResponse(False, 'Cannot Send Command To Device!')
 
-    return result, r_info
+    return result, buildResponse(True, '')
+
+def buildResponse(status, msg, ex_data_name = None, ex_data = None):
+    response = {}
+    response['returnMsg'] = msg
+    if status:
+        response['returnState'] = 'S'
+    else:
+        response['returnState'] = 'F'
+
+    if ex_data_name != None:
+        response[ex_data_name] = ex_data
+
+    return response
 
 def run_phy_server(addr, ID):
     logger.info('ID: ' + str(ID) + ', Listening at ' + str(addr[0]) + ':' + str(addr[1]))
@@ -356,8 +368,9 @@ def main(argv):
         port_phy = int(argv[3])
         server_id = int(argv[4])
 
-#        global SERVER_ID
-#        SERVER_ID = server_id
+        global SERVER_ID
+        SERVER_ID = server_id
+
     else:
         print("Usage: python server.py host_addr http_port phy_port server_ID")
         return
