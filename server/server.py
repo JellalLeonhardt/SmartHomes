@@ -8,6 +8,7 @@
 import _thread
 import sys
 import logging
+import logging.handlers
 import time
 
 import phy_com
@@ -36,7 +37,7 @@ conn_lock = _thread.allocate_lock()
 #init global logger
 logger = logging.getLogger('server')
 logger.setLevel(logging.DEBUG)
-fh = logging.RotatingFileHandler('server.log', 'w', 1024*1024*100, 10)
+fh = logging.handlers.RotatingFileHandler('server.log', 'w', 1024*1024*100, 10)
 fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
@@ -70,7 +71,7 @@ EFFECTS = {
         'blue': phy_com.CAMERA_EFFECTS_BLUE,
         'green': phy_com.CAMERA_EFFECTS_GREEN,
         'red': phy_com.CAMERA_EFFECTS_RED,
-        'antuque': phy_com.CAMERA_EFFECTS_ANTUQUE,
+        'antique': phy_com.CAMERA_EFFECTS_ANTUQUE,
         'negative': phy_com.CAMERA_EFFECTS_NEGATIVE,
         'bwnegative': phy_com.CAMERA_EFFECTS_B_W_NEGATIVE,
         }
@@ -119,7 +120,7 @@ def getDevList():
 def ledSingleSwitch():
     dev_id = int(request.query.ID)
     led_id = int(request.query.LED_ID)
-    switch = int(request,query.switch)
+    switch = int(request.query.Switch)
     
     if switch == 0:
         result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_OFF, led_id)
@@ -131,7 +132,7 @@ def ledSingleSwitch():
 @route('/led/allswitch')
 def ledAllSwitch():
     dev_id = int(request.query.ID)
-    switch = int(request.query.switch)
+    switch = int(request.query.Switch)
     
     if switch == 0:
         result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_OFF_ALL, 0)
@@ -198,7 +199,7 @@ def camera_whitebalance():
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_WHITE_BALANCE, WHITE_BALANCE[white])
     return r_info
 
-@route('/camera/effect')
+@route('/camera/effects')
 def camera_effect():
     dev_id = int(request.query.ID)
     effect = request.query.effect
@@ -212,7 +213,7 @@ def camera_effect():
 @route('/camera/explosure')
 def camera_explosure():
     dev_id = int(request.query.ID)
-    exp = request.query.exp
+    exp = request.query.explosure
     
     if not exp in EXPLOSURE.keys():
         return buildResponse(False, 'Wrong Parameter Value!')
@@ -221,9 +222,9 @@ def camera_explosure():
     return r_info
 
 @route('/camera/saturation')
-def camera_saturation(ID, sat):
+def camera_saturation():
     dev_id = int(request.query.ID)
-    sat = request.query.sat
+    sat = request.query.saturation
 
     if not sat in SATURATION.keys():
         return buildResponse(False, 'Wrong Parameter Value!')
@@ -231,8 +232,8 @@ def camera_saturation(ID, sat):
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_SATURATION, SATURATION[sat])
     return r_info
 
-@route('/camera/light')
-def camera_lightness(ID, lightness):
+@route('/camera/lightness')
+def camera_lightness():
     dev_id = int(request.query.ID)
     lightness = request.query.lightness
     
@@ -243,7 +244,7 @@ def camera_lightness(ID, lightness):
     return r_info
 
 @route('/camera/contrast')
-def camera_contrast(ID, contrast):
+def camera_contrast():
     dev_id = int(request.query.ID)
     contrast = request.query.contrast
     

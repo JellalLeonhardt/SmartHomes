@@ -6,7 +6,7 @@ host_addr = "http://25.0.0.150:8080/"
 dev_id = 1
 
 def urlread(url):
-    fp = urllib.request.urlopen(host_addr + "device/list")
+    fp = urllib.request.urlopen(url)
     data = fp.read()
     return data
 
@@ -88,10 +88,10 @@ def cameraTest():
     print(data)
     cameraPictureTest('white_sunny')
 
-    print('\t\tSet White Balance to clody')
-    data = urlread(url + 'clody').decode()
+    print('\t\tSet White Balance to cloudy')
+    data = urlread(url + 'cloudy').decode()
     print(data)
-    cameraPictureTest('white_clody')
+    cameraPictureTest('white_cloudy')
 
     print('\t\tSet White Balance to auto')
     data = urlread(url + 'auto').decode()
@@ -191,11 +191,11 @@ def cameraTest():
     print('Camera Test End')
 
 def cameraPictureTest(pic_name):
-    data = urlread(host_addr + 'camera/picture?ID=' + str(dev_id))
+#    data = urlread(host_addr + 'camera/picture?ID=' + str(dev_id))
     filename = './pictest/' + pic_name + '.jpg'
-    fp = open(filename, 'wb')
-    fp.write(data)
-    fp.close()
+#    fp = open(filename, 'wb')
+#    fp.write(data)
+#    fp.close()
     print('\t\tPicture: ' + pic_name + ' had been written to ' + filename)
 
 def main(argv):
