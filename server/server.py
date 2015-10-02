@@ -28,9 +28,6 @@ dev_list = {}
 #key: dev_id, value: data_of_picture
 data_dic = { 0: b'' }
 data_lock = _thread.allocate_lock()
-#key: dev_id, value: (pack_type, pack_code, pack_data)
-info_dic = { 0: (0, 0, 0)}
-info_lock = _thread.allocate_lock()
 #key: dev_id, value: DevConn
 conn_dic = { 0: None}
 conn_lock = _thread.allocate_lock()
@@ -116,6 +113,39 @@ def getDevList():
         devs.append(str(dev_id))
     r_info = buildResponse(True, '', 'devList', devs)
     return r_info
+
+@route('/device/setting')
+def getSetting():
+    dev_id = int(request.query.ID)
+    dev_status = conn_dic[dev_id].data
+
+    settings = {}
+    settings['xrandr'] = dev_status.xrandr
+    settings['white'] = dev_status.white
+    settings['effects'] = dev_status.effect
+    settings['explosure'] = dev_status.explosure
+    settings['lightness'] = dev_status.lightness
+    settings['contrast'] = dev_status.contrast
+    settings['saturation'] = dev_status.saturation
+
+    return buildResponse(True, '', 'devSetting', settings)
+
+@route('/device/setting', method='POST')
+def getSettingByPost():
+    postValue = bottle.request.POST.decode('utf-8')
+    dev_id = int(bottle.request.POST.get('ID'))
+    dev_status = conn_dic[dev_id].data
+
+    settings = {}
+    settings['xrandr'] = dev_status.xrandr
+    settings['white'] = dev_status.white
+    settings['effects'] = dev_status.effect
+    settings['explosure'] = dev_status.explosure
+    settings['lightness'] = dev_status.lightness
+    settings['contrast'] = dev_status.contrast
+    settings['saturation'] = dev_status.saturation
+
+    return buildResponse(True, '', 'devSetting', settings)
 
 @route('/led/singleswitch')
 def ledSingleSwitch():
@@ -289,6 +319,9 @@ def buildResponse(status, msg, ex_data_name = None, ex_data = None):
 
     return response
 
+def initDev(dev_id):
+    pass
+
 def run_phy_server(addr, ID):
     logger.info('ID: ' + str(ID) + ', Listening at ' + str(addr[0]) + ':' + str(addr[1]))
     server = phy_com.DeviceServer(addr[0], addr[1], ID, logger)
@@ -324,7 +357,8 @@ def run_phy_server(addr, ID):
         
         #Todo...
         #Open picture strem at beginning
-        sendCmd(ID_counter - 1, phy_com.CTRL_CAMERA_STREAM, phy_com.CAMERA_STREAM_ON)
+        sendCmd(dev_id, phy_com.CTRL_CAMERA_STREAM, phy_com.CAMERA_STREAM_ON)
+        initDev(dev_id)
         conn.startRecvData()
 
 pic_counter = 0

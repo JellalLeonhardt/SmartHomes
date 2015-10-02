@@ -138,6 +138,14 @@ class PhyState:
         self.pic_data = b''
         self.sem_update = threading.Semaphore(0) 
         
+        self.xrandr = '320x240'
+        self.white = 'auto'
+        self.effect = 'normal'
+        self.explosure = 1
+        self.saturation = 1
+        self.lightness = 2
+        self.contrast = 2
+        
 class PhyPack:
     def __init__(self, buf = b''):
         #print('[INFO]make package:\t' + str(buf))
