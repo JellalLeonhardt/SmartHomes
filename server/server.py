@@ -203,7 +203,7 @@ def getPicture():
     dev_id = int(request.query.ID)
 
     if dev_id in data_dic.keys():
-#        return buildResponse(True, '', 'picture', base64.b64encode(data_dic[dev_id]))
+#        return buildResponse(True, '', 'picture', base64.b64encode(data_dic[dev_id]).decode())
         return base64.b64encode(data_dic[dev_id])
     else:
         logger.warning("Require ID " + str(dev_id) + ", and data list is " + str(data_dic.keys()))
