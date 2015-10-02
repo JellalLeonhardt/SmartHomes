@@ -10,6 +10,7 @@ import sys
 import logging
 import logging.handlers
 import time
+import base64
 
 import phy_com
 from bottle import route, run, template, request
@@ -172,7 +173,7 @@ def getPicture():
     dev_id = int(request.query.ID)
 
     if dev_id in data_dic.keys():
-        return data_dic[dev_id]
+        return base64.b64encode(data_dic[dev_id])
     else:
         logger.warning("Require ID " + str(dev_id) + ", and data list is " + str(data_dic.keys()))
         return buildResponse(False, 'Device Not Found!') 
