@@ -1,6 +1,7 @@
 import urllib.request
 import time
 import sys
+import base64
 
 host_addr = "http://25.0.0.150:8080/"
 dev_id = 1
@@ -129,11 +130,20 @@ def cameraTest():
     print(data)
     cameraPictureTest('explosure_0')
 
+    print('\t\tSet Explosure to 1')
+    data = urlread(url + '1').decode()
+    print(data)
+    cameraPictureTest('explosure_1')
+
     print('\t\tSet Explosure to 2')
     data = urlread(url + '2').decode()
     print(data)
     cameraPictureTest('explosure_2')
 
+    print('\t\tSet Explosure to 3')
+    data = urlread(url + '3').decode()
+    print(data)
+    cameraPictureTest('explosure_3')
 
     print('\tLightness Test')
     url = host_addr + 'camera/lightness?ID=' + str(dev_id) + '&lightness='
@@ -142,10 +152,10 @@ def cameraTest():
     print(data)
     cameraPictureTest('lightness_4')
 
-    print('\t\tSet Lightness to 0')
-    data = urlread(url + '0').decode()
+    print('\t\tSet Lightness to 2')
+    data = urlread(url + '2').decode()
     print(data)
-    cameraPictureTest('lightness_0')
+    cameraPictureTest('lightness_2')
 
     print('\t\tSet Lightness to 2')
     data = urlread(url + '2').decode()
@@ -191,11 +201,12 @@ def cameraTest():
     print('Camera Test End')
 
 def cameraPictureTest(pic_name):
-#    data = urlread(host_addr + 'camera/picture?ID=' + str(dev_id))
+    time.sleep(20)
+    data = urlread(host_addr + 'camera/picture?ID=' + str(dev_id))
     filename = './pictest/' + pic_name + '.jpg'
-#    fp = open(filename, 'wb')
-#    fp.write(data)
-#    fp.close()
+    fp = open(filename, 'wb')
+    fp.write(base64.b64decode(data))
+    fp.close()
     print('\t\tPicture: ' + pic_name + ' had been written to ' + filename)
 
 def main(argv):
