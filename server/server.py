@@ -116,8 +116,8 @@ def getDevList():
 
 @route('/device/setting')
 def getSetting():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(request.query.ID)
     dev_status = conn_dic[dev_id].data
@@ -138,7 +138,7 @@ def getSettingByPost():
     postValue = bottle.request.POST.decode('utf-8')
 
     if bottle.request.POST.get('ID') == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+        return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(bottle.request.POST.get('ID'))
     dev_status = conn_dic[dev_id].data
@@ -156,12 +156,12 @@ def getSettingByPost():
 
 @route('/led/singleswitch')
 def ledSingleSwitch():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
-    if request.query.LED_ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: LED_ID')
-    if request.query.Switch == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: Switch')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
+    if not request.query.LED_ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter! ')
+    if not request.query.Switch.isdigit():
+        return buildResponse(False, 'Wrong Parameter! ')
 
     dev_id = int(request.query.ID)
     led_id = int(request.query.LED_ID)
@@ -176,10 +176,10 @@ def ledSingleSwitch():
 
 @route('/led/allswitch')
 def ledAllSwitch():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
-    if request.query.Switch == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: Switch')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
+    if not request.query.Switch.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(request.query.ID)
     switch = int(request.query.Switch)
@@ -192,8 +192,8 @@ def ledAllSwitch():
 
 @route('/led/status')
 def ledStatus():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
     
     dev_id = int(request.query.ID)
     
@@ -214,30 +214,27 @@ def ledStatus():
         led_status.append({'id': i, 'status:': conn_dic[dev_id].data.led_status[i]})
 
     r_info = buildResponse(True, '', 'LEDStatus', led_status)
-#    if conn_dic[dev_id].data.update == 0:
-#        conn_dic[dev_id].data.update = 1
-#    conn_dic[dev_id].data.update -= 1
 
     return r_info
 
 @route('/camera/picture')
 def getPicture():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
     
     dev_id = int(request.query.ID)
 
     if dev_id in data_dic.keys():
-#        return buildResponse(True, '', 'picture', base64.b64encode(data_dic[dev_id]).decode())
-        return base64.b64encode(data_dic[dev_id])
+        return buildResponse(True, '', 'picture', base64.b64encode(data_dic[dev_id]).decode())
+#        return base64.b64encode(data_dic[dev_id])
     else:
         logger.warning("Require ID " + str(dev_id) + ", and data list is " + str(data_dic.keys()))
         return buildResponse(False, 'Device Not Found!') 
 
 @route('/camera/xrandr')
 def camera_xrandr():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(request.query.ID)
     xrandr = request.query.xrandr
@@ -250,8 +247,8 @@ def camera_xrandr():
 
 @route('/camera/white')
 def camera_whitebalance():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(request.query.ID)
     white = request.query.white
@@ -264,6 +261,9 @@ def camera_whitebalance():
 
 @route('/camera/effects')
 def camera_effect():
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
+
     dev_id = int(request.query.ID)
     effect = request.query.effect
     
@@ -275,8 +275,8 @@ def camera_effect():
 
 @route('/camera/explosure')
 def camera_explosure():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(request.query.ID)
     exp = request.query.explosure
@@ -289,8 +289,8 @@ def camera_explosure():
 
 @route('/camera/saturation')
 def camera_saturation():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(request.query.ID)
     sat = request.query.saturation
@@ -303,8 +303,8 @@ def camera_saturation():
 
 @route('/camera/lightness')
 def camera_lightness():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(request.query.ID)
     lightness = request.query.lightness
@@ -317,8 +317,8 @@ def camera_lightness():
 
 @route('/camera/contrast')
 def camera_contrast():
-    if request.query.ID == '':
-        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(request.query.ID)
     contrast = request.query.contrast

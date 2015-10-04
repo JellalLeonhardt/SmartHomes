@@ -45,6 +45,7 @@ CTRL_CAMERA_SATURATION = 11
 CTRL_CAMERA_LIGHTNESS = 12
 CTRL_CAMERA_CONTRAST = 13
 CTRL_ID_SET = 14 
+CTRL_WEATHER_SET = 15
 
 #------------------------------------------------------
 

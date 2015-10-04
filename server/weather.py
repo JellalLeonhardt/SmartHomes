@@ -26,7 +26,7 @@ def getHTML(url):
                'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*',
                'Accept-Encoding' : 'gzip, deflate',
                'Accept-Language' : 'zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3',
-               'Connection: ' : 'keep-alive' }
+               'Connection ' : 'keep-alive' }
 
     url_info = urllib.parse.urlparse(url)
 
@@ -43,7 +43,7 @@ def getHTML(url):
         print(e)
         return ""
 
-    print("Status Code: "+str(fp.status));
+    print("Status Code: "+str(fp.status))
 
     data = fp.read()
     if fp.info().get('Content-Encoding') == 'gzip':
@@ -78,7 +78,7 @@ def getRawWeatherInfo(citycode):
                'Accept' : '*/*',
                'Accept-Encoding' : 'gzip, deflate',
                'Accept-Language' : 'zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3',
-               'Connection: ' : 'keep-alive' }
+               'Connection ' : 'keep-alive' }
 
 
     conn = http.client.HTTPConnection('d1.weather.com.cn', 80)
@@ -89,6 +89,10 @@ def getRawWeatherInfo(citycode):
     except http.client.error as e:
         print(e)
         return {}
+
+    print("Status Code: "+str(fp.status))
+    if fp.status == 302:
+        print(fp.getheaders())
 
     data = fp.read()
     if fp.info().get('Content-Encoding') == 'gzip':
@@ -104,9 +108,9 @@ def getWeather(citicode):
     raw_info = getRawWeatherInfo(citicode)
     result = {}
     result['Temperature'] = raw_info['temp']
-    result['Weather'] = raw_info['weather']
+    result['Weather'] = raw_info['weathere']
     result['Wind Speed'] = raw_info['WS'] + ": " + raw_info['wse'][4:]
-    result['Wind Direction'] = raw_info['WD']
+    result['Wind Direction'] = raw_info['wde']
     result['Weat'] = raw_info['SD']
     result['AQI'] = raw_info['aqi']
     return result
@@ -114,10 +118,10 @@ def getWeather(citicode):
 def main(argv):
     print("getting ranks")
     ranks = getLifeRank(CITYCODE_WUHAN)
-    print("getting weathers")
-    info = getWeather(CITYCODE_WUHAN)
     for val in ranks.keys():
         print(val + ': ' + ranks[val])
+    print("getting weathers")
+    info = getWeather(CITYCODE_WUHAN)
     for val in info.keys():
         print(val + ': ' + info[val])
     

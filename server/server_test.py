@@ -1,4 +1,5 @@
 import urllib.request
+import json
 import time
 import sys
 import base64
@@ -11,11 +12,15 @@ def urlread(url):
     data = fp.read()
     return data
 
-def listTest():
-    print("List Test Start:")
+def devTest():
+    print("Device Test Start:")
+    print('\tList Test')
     data = urlread(host_addr + "device/list").decode()
     print(data)
-    print("List Test End")
+    print('\tSetting Test')
+    data = urlread(host_addr + 'device/setting?ID=' + str(dev_id)).decode()
+    print(data)
+    print("Device Test End")
 
 def ledTest():
     print("LED Test Start")
@@ -58,7 +63,7 @@ def ledTest():
     
 def ledStatusTest():
     print('\t\tLED Status:')
-    data = urlread(host_addr + 'led/status?ID=' + str(dev_id))
+    data = urlread(host_addr + 'led/status?ID=' + str(dev_id)).decode()
     print(data)
 
 def cameraTest():
@@ -202,8 +207,10 @@ def cameraTest():
 
 def cameraPictureTest(pic_name):
     time.sleep(20)
-    data = urlread(host_addr + 'camera/picture?ID=' + str(dev_id))
-    filename = './pictest/' + pic_name + '.jpg'
+    json_data = urlread(host_addr + 'camera/picture?ID=' + str(dev_id))
+    filename = './pictest_' + pic_name + '.jpg'
+    data = json.loads(json_data.decode())
+    print(data['picture'])
     fp = open(filename, 'wb')
     fp.write(base64.b64decode(data))
     fp.close()
@@ -221,7 +228,7 @@ def main(argv):
     print('Test addr: ' + host_addr)
     print('Test dev_id: ' + str(dev_id))
     print("--------Test Start--------")
-    listTest()
+    devTest()
     ledTest()
     cameraTest()
     print("--------Test End--------")
