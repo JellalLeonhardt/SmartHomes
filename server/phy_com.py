@@ -141,10 +141,10 @@ class PhyState:
         self.xrandr = '320x240'
         self.white = 'auto'
         self.effect = 'normal'
-        self.explosure = 1
-        self.saturation = 1
-        self.lightness = 2
-        self.contrast = 2
+        self.explosure = '1'
+        self.saturation = '1'
+        self.lightness = '2'
+        self.contrast = '2'
         
 class PhyPack:
     def __init__(self, buf = b''):

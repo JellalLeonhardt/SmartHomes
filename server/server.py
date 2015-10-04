@@ -116,6 +116,9 @@ def getDevList():
 
 @route('/device/setting')
 def getSetting():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+
     dev_id = int(request.query.ID)
     dev_status = conn_dic[dev_id].data
 
@@ -133,6 +136,10 @@ def getSetting():
 @route('/device/setting', method='POST')
 def getSettingByPost():
     postValue = bottle.request.POST.decode('utf-8')
+
+    if bottle.request.POST.get('ID') == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+
     dev_id = int(bottle.request.POST.get('ID'))
     dev_status = conn_dic[dev_id].data
 
@@ -149,6 +156,13 @@ def getSettingByPost():
 
 @route('/led/singleswitch')
 def ledSingleSwitch():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if request.query.LED_ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: LED_ID')
+    if request.query.Switch == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: Switch')
+
     dev_id = int(request.query.ID)
     led_id = int(request.query.LED_ID)
     switch = int(request.query.Switch)
@@ -162,6 +176,11 @@ def ledSingleSwitch():
 
 @route('/led/allswitch')
 def ledAllSwitch():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    if request.query.Switch == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: Switch')
+
     dev_id = int(request.query.ID)
     switch = int(request.query.Switch)
     
@@ -173,6 +192,9 @@ def ledAllSwitch():
 
 @route('/led/status')
 def ledStatus():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    
     dev_id = int(request.query.ID)
     
     result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
@@ -200,6 +222,9 @@ def ledStatus():
 
 @route('/camera/picture')
 def getPicture():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+    
     dev_id = int(request.query.ID)
 
     if dev_id in data_dic.keys():
@@ -211,6 +236,9 @@ def getPicture():
 
 @route('/camera/xrandr')
 def camera_xrandr():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+
     dev_id = int(request.query.ID)
     xrandr = request.query.xrandr
 
@@ -222,6 +250,9 @@ def camera_xrandr():
 
 @route('/camera/white')
 def camera_whitebalance():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+
     dev_id = int(request.query.ID)
     white = request.query.white
     
@@ -244,6 +275,9 @@ def camera_effect():
 
 @route('/camera/explosure')
 def camera_explosure():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+
     dev_id = int(request.query.ID)
     exp = request.query.explosure
     
@@ -255,6 +289,9 @@ def camera_explosure():
 
 @route('/camera/saturation')
 def camera_saturation():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+
     dev_id = int(request.query.ID)
     sat = request.query.saturation
 
@@ -266,6 +303,9 @@ def camera_saturation():
 
 @route('/camera/lightness')
 def camera_lightness():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+
     dev_id = int(request.query.ID)
     lightness = request.query.lightness
     
@@ -277,6 +317,9 @@ def camera_lightness():
 
 @route('/camera/contrast')
 def camera_contrast():
+    if request.query.ID == '':
+        return buildResponse(False, 'Wrong Parameter! Miss: ID')
+
     dev_id = int(request.query.ID)
     contrast = request.query.contrast
     
@@ -320,7 +363,15 @@ def buildResponse(status, msg, ex_data_name = None, ex_data = None):
     return response
 
 def initDev(dev_id):
-    pass
+    dev_status = conn_dic[dev_id].data
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CHANGE_SIZE, XRANDR[dev_status.xrandr])
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_WHITE_BALANCE, WHITE_BALANCE[dev_status.white])
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_EFFECTS, EFFECTS[dev_status.effect])
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_EXPLOSURE, EXPLOSURE[dev_status.explosure])
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_SATURATION, SATURATION[dev_status.saturation])
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_LIGHTNESS, LIGHTNESS[dev_status.lightness])
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CONTRAST, CONTRAST[dev_status.contrast])
+    #pass
 
 def run_phy_server(addr, ID):
     logger.info('ID: ' + str(ID) + ', Listening at ' + str(addr[0]) + ':' + str(addr[1]))
