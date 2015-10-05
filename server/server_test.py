@@ -26,7 +26,7 @@ def ledTest():
     print("LED Test Start")
 
     print('\tMain Switch Test')
-    url = host_addr + 'led/allswitch?ID=' + str(dev_id) + '&'
+    url = host_addr + 'led/mainswitch?ID=' + str(dev_id) + '&'
     print('\t\tAll LEDs On')
     data = urlread(url + "Switch=1").decode()
     print(data)
@@ -64,6 +64,9 @@ def ledTest():
 def ledStatusTest():
     print('\t\tLED Status:')
     data = urlread(host_addr + 'led/status?ID=' + str(dev_id)).decode()
+    print(data)
+    print('\t\tMain Switch Status:')
+    data = urlread(host_addr + 'led/mainstatus?ID=' + str(dev_id)).decode()
     print(data)
 
 def cameraTest():

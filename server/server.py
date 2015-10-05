@@ -174,7 +174,7 @@ def ledSingleSwitch():
 
     return r_info
 
-@route('/led/allswitch')
+@route('/led/mainswitch')
 def ledAllSwitch():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -216,6 +216,34 @@ def ledStatus():
     r_info = buildResponse(True, '', 'LEDStatus', led_status)
 
     return r_info
+
+@route('/led/mainstatus')
+def ledMainStatus():
+    if not request.query.ID.isdigit():
+        return buildResponse(False, 'Wrong Parameter!')
+
+    dev_id = int(request.query.ID)
+
+    result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
+
+    if not result:
+        return r_info
+
+    time_out = TIME_OUT
+    while not conn_dic[dev_id].data.sem_update.acquire(False):
+        time.sleep(0.001)
+        time_out -= 1
+        if time_out <= 0:
+            return buildResponse(False, "Device Time Out!")
+
+    main_status = 0
+    for led in conn_dic[dev_id].data.led_status:
+        main_status += led
+
+    if main_status > 0:
+        main_status = 1
+
+    return buildResponse(True, '', 'Status', main_status)
 
 @route('/camera/picture')
 def getPicture():

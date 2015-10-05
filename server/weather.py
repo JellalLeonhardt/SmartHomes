@@ -93,6 +93,9 @@ def getRawWeatherInfo(citycode):
     print("Status Code: "+str(fp.status))
     if fp.status == 302:
         print(fp.getheaders())
+        for val in fp.getheaders():
+            if val[0] == 'Location':
+                print(getHTML(val[1]))
 
     data = fp.read()
     if fp.info().get('Content-Encoding') == 'gzip':
