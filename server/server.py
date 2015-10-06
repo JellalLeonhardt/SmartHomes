@@ -13,7 +13,7 @@ import time
 import base64
 
 import phy_com
-from bottle import route, run, template, request
+from bottle import route, run, template, request, response
 
 HOST_ADDR = 'localhost'
 PORT_PHY = 10086
@@ -22,6 +22,23 @@ PORT_HTTP = 8080
 SERVER_ID = 0
 
 TIME_OUT = 5000
+
+####################################################################
+
+# Edited by Mingtao Fu
+# So is every decorator called "allow_cross_domain"
+def allow_cross_domain(fn):
+	def _enable_cors(*args, **kwargs):
+		# set headers
+		response.headers['Access-Control-Allow-Origin'] = '*'
+		allow_headers = 'Referer, Accept, Origin, User-Agent'
+		response.headers['Access-Control-Allow-Headers'] = allow_headers
+		return fn(*args, **kwargs)
+	return _enable_cors
+
+###################################################################	
+	
+
 
 #key IP, value: 
 dev_list = {}
@@ -107,6 +124,7 @@ CONTRAST = {
         }
 
 @route('/device/list')
+@allow_cross_domain
 def getDevList():
     devs = [] 
     for dev_id in dev_list.values():
@@ -115,6 +133,7 @@ def getDevList():
     return r_info
 
 @route('/device/setting')
+@allow_cross_domain
 def getSetting():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -134,6 +153,7 @@ def getSetting():
     return buildResponse(True, '', 'devSetting', settings)
 
 @route('/device/setting', method='POST')
+@allow_cross_domain
 def getSettingByPost():
     postValue = bottle.request.POST.decode('utf-8')
 
@@ -155,6 +175,7 @@ def getSettingByPost():
     return buildResponse(True, '', 'devSetting', settings)
 
 @route('/led/singleswitch')
+@allow_cross_domain
 def ledSingleSwitch():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -175,6 +196,7 @@ def ledSingleSwitch():
     return r_info
 
 @route('/led/mainswitch')
+@allow_cross_domain
 def ledAllSwitch():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -191,6 +213,7 @@ def ledAllSwitch():
     return r_info
 
 @route('/led/status')
+@allow_cross_domain
 def ledStatus():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -211,13 +234,14 @@ def ledStatus():
 
     led_status = [] 
     for i in range(0, len(conn_dic[dev_id].data.led_status)):
-        led_status.append({'id': i, 'status:': conn_dic[dev_id].data.led_status[i]})
+        led_status.append({'id': i, 'status': conn_dic[dev_id].data.led_status[i]})
 
     r_info = buildResponse(True, '', 'LEDStatus', led_status)
 
     return r_info
 
 @route('/led/mainstatus')
+@allow_cross_domain
 def ledMainStatus():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -246,6 +270,7 @@ def ledMainStatus():
     return buildResponse(True, '', 'Status', main_status)
 
 @route('/camera/picture')
+@allow_cross_domain
 def getPicture():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -260,6 +285,7 @@ def getPicture():
         return buildResponse(False, 'Device Not Found!') 
 
 @route('/camera/xrandr')
+@allow_cross_domain
 def camera_xrandr():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -274,6 +300,7 @@ def camera_xrandr():
     return r_info
 
 @route('/camera/white')
+@allow_cross_domain
 def camera_whitebalance():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -288,6 +315,7 @@ def camera_whitebalance():
     return r_info
 
 @route('/camera/effects')
+@allow_cross_domain
 def camera_effect():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -302,6 +330,7 @@ def camera_effect():
     return r_info
 
 @route('/camera/explosure')
+@allow_cross_domain
 def camera_explosure():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -316,6 +345,7 @@ def camera_explosure():
     return r_info
 
 @route('/camera/saturation')
+@allow_cross_domain
 def camera_saturation():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -330,6 +360,7 @@ def camera_saturation():
     return r_info
 
 @route('/camera/lightness')
+@allow_cross_domain
 def camera_lightness():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
@@ -344,6 +375,7 @@ def camera_lightness():
     return r_info
 
 @route('/camera/contrast')
+@allow_cross_domain
 def camera_contrast():
     if not request.query.ID.isdigit():
         return buildResponse(False, 'Wrong Parameter!')
