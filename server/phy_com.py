@@ -45,7 +45,17 @@ CTRL_CAMERA_SATURATION = 11
 CTRL_CAMERA_LIGHTNESS = 12
 CTRL_CAMERA_CONTRAST = 13
 CTRL_ID_SET = 14 
-CTRL_WEATHER_SET = 15
+CTRL_TIME_SET = 15
+CTRL_WEATHER_SET = 16
+
+#------------------------------------------------------
+
+WEATHER_WEAT = 1
+WEATHER_TEMP = 2
+WEATHER_WEATHER = 3
+WEATHER_AQI = 4
+WEATHER_WIND_DIRECTION = 5
+WEATHER_WIND_SPEED = 6
 
 #------------------------------------------------------
 

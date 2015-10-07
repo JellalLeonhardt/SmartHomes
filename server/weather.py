@@ -20,7 +20,6 @@ RANKS = {
     'comforte' : 8
         }
 
-
 def getHTML(url):
     header = { 'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1) Gecko/20090624 Firefox/3.5',
                'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*',
