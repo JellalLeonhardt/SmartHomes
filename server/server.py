@@ -231,6 +231,10 @@ def ledStatus():
         time_out -= 1
         if time_out <= 0:
             return buildResponse(False, 'Device Time Out!') 
+        if time_out % 100 != 0:
+            result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
+            if not result:
+                return r_info
 
     led_status = [] 
     for i in range(0, len(conn_dic[dev_id].data.led_status)):
@@ -259,6 +263,11 @@ def ledMainStatus():
         time_out -= 1
         if time_out <= 0:
             return buildResponse(False, "Device Time Out!")
+        if time_out % 100 != 0:
+            result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
+            if not result:
+                return r_info
+
 
     main_status = 0
     for led in conn_dic[dev_id].data.led_status:
@@ -515,17 +524,19 @@ def dataPackHandler(pack, conn_data):
         
         logger.debug("Get data: " + str(conn_data.pic_data))
         pic_counter += 1
-        logger.info("Get picture: " + str(pic_counter) + " at dev " + str(pack.ID))
+        logger.debug("Get picture: " + str(pic_counter) + " at dev " + str(pack.ID))
 
         conn_data.pic_data = b''
 
 def ackPackHandler(pack, conn_data):
     if pack.code == phy_com.ACK_LED:
         ack = pack.getData()
+        result = "LED: "
         for i in range(8):
+            result += str(ack & (0x01 << i)) + ','
             if (ack & (0x01 << i)) > 0:
                 conn_data.led_status[i] = 1
-#        conn_data.update += 1
+        logger.info(result)
         conn_data.sem_update.release()
     else:
         logger.warning('Wrong ack code! code = ' + str(pack.code))

@@ -241,7 +241,7 @@ def main(argv):
     print("--------Test Start--------")
     devTest()
     ledTest()
-    cameraTest()
+    #cameraTest()
     print("--------Test End--------")
     
 if __name__ == '__main__':
