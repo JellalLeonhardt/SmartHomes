@@ -297,6 +297,11 @@ def camera_xrandr():
         return buildResponse(False, 'Wrong Parameter Value!')
 
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CHANGE_SIZE, XRANDR[xrandr])
+
+    if result:
+        dev_status = conn_dic[dev_id].data
+        dev_status.xrandr = xrandr
+
     return r_info
 
 @route('/camera/white')
@@ -312,9 +317,13 @@ def camera_whitebalance():
         return buildResponse(False, 'Wrong Parameter Value!')
 
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_WHITE_BALANCE, WHITE_BALANCE[white])
+    if result:
+        dev_status = conn_dic[dev_id].data
+        dev_status.white = white
+
     return r_info
 
-@route('/camera/effects')
+@route('/camera/effect')
 @allow_cross_domain
 def camera_effect():
     if not request.query.ID.isdigit():
@@ -327,6 +336,10 @@ def camera_effect():
         return buildResponse(False, 'Wrong Parameter Value!')
 
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_EFFECTS, EFFECTS[effect])
+    if result:
+        dev_status = conn_dic[dev_id].data
+        dev_status.effect = effect
+
     return r_info
 
 @route('/camera/explosure')
@@ -342,6 +355,10 @@ def camera_explosure():
         return buildResponse(False, 'Wrong Parameter Value!')
 
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_EXPLOSURE, EXPLOSURE[exp])
+    if result:
+        dev_status = conn_dic[dev_id].data
+        dev_status.explosure = exp
+
     return r_info
 
 @route('/camera/saturation')
@@ -357,6 +374,11 @@ def camera_saturation():
         return buildResponse(False, 'Wrong Parameter Value!')
     
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_SATURATION, SATURATION[sat])
+
+    if result:
+        dev_status = conn_dic[dev_id].data
+        dev_status.saturation = sat
+
     return r_info
 
 @route('/camera/lightness')
@@ -372,6 +394,11 @@ def camera_lightness():
         return buildResponse(False, 'Wrong Parameter Value!')
     
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_LIGHTNESS, LIGHTNESS[lightness])
+
+    if result:
+        dev_status = conn_dic[dev_id].data
+        dev_status.lightness = lightness
+
     return r_info
 
 @route('/camera/contrast')
@@ -387,6 +414,11 @@ def camera_contrast():
         return buildResponse(False, 'Wrong Parameter Value!')
     
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CONTRAST, CONTRAST[contrast])
+
+    if result:
+        dev_status = conn_dic[dev_id].data
+        dev_status.contrast = contrast
+
     return r_info
 
 def sendCmd(dev_id, cmd_code, cmd_data):

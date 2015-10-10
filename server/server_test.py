@@ -77,16 +77,19 @@ def cameraTest():
     print('\t\tSet Xrandr to 320x240')
     data = urlread(url + '320x240').decode()
     print(data)
+    cameraSetting()
     cameraPictureTest('xrandr320x240')
 
     print('\t\tSet Xrandr to 1024x768')
     data = urlread(url + '1024x768').decode()
     print(data)
+    cameraSetting()
     cameraPictureTest('xrandr1024x768')
 
     print('\t\tSet Xrandr to 640x480')
     data = urlread(url + '640x480').decode()
     print(data)
+    cameraSetting()
     cameraPictureTest('xrandr640x480')
 
 
@@ -109,7 +112,7 @@ def cameraTest():
 
 
     print('\tEffect Test')
-    url = host_addr + 'camera/effects?ID=' + str(dev_id) + '&effect='
+    url = host_addr + 'camera/effect?ID=' + str(dev_id) + '&effect='
     print('\t\tSet Effect to B&W')
     data = urlread(url + 'blackwhite').decode()
     print(data)
@@ -209,15 +212,20 @@ def cameraTest():
     print('Camera Test End')
 
 def cameraPictureTest(pic_name):
-    time.sleep(20)
+    #time.sleep(20)
     json_data = urlread(host_addr + 'camera/picture?ID=' + str(dev_id))
     filename = './pictest_' + pic_name + '.jpg'
-    data = json.loads(json_data.decode())
-    print(data['picture'])
-    fp = open(filename, 'wb')
-    fp.write(base64.b64decode(data))
-    fp.close()
+    #data = json.loads(json_data.decode())
+    #print(data['picture'])
+    #fp = open(filename, 'wb')
+    #fp.write(base64.b64decode(data))
+    #fp.close()
     print('\t\tPicture: ' + pic_name + ' had been written to ' + filename)
+
+def cameraSetting():
+    print('\t\tSetting Test')
+    data = urlread(host_addr + 'device/setting?ID=' + str(dev_id)).decode()
+    print(data)
 
 def main(argv):
     if len(argv) == 4:
