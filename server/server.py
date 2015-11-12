@@ -227,7 +227,7 @@ def ledStatus():
  
     time_out = TIME_OUT
     while not conn_dic[dev_id].data.sem_update.acquire(False):
-        time.sleep(0.001)
+        time.sleep(0.1)
         time_out -= 1
         if time_out <= 0:
             return buildResponse(False, 'Device Time Out!') 
