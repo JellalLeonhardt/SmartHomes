@@ -11,7 +11,6 @@ import struct
 import _thread
 import threading
 import logging
-
 PACK_FORMAT = '@bbhhH'
 DATA_FORMAT = '@i'
 
@@ -338,11 +337,11 @@ class DeviceConn:
         try:
             buf = self.__sock.recv(8)
         except socket.error as e:
-            self.logger.error('cannot recv package head data!!!')
+            self.logger.error('cannot recv package head data!!! buf: ' + str(buf))
             self.logger.error(e)
             return None
 
-        self.logger.debug('recv head:\t' + str(buf))
+        self.logger.info('recv head:\t' + str(buf))
         return PhyPack(buf)
 
     def __recv(self):
