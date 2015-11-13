@@ -65,7 +65,6 @@ ch.setFormatter(formatter)
 fh_info.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
-logger.addHandler(fh_info)
 
 #const val table
 XRANDR = {
@@ -236,7 +235,7 @@ def ledStatus():
         time_out -= 1
         if time_out <= 0:
             return buildResponse(False, 'Device Time Out!') 
-        if time_out % 1000 == 0:
+        if time_out % 500 == 0:
             result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
             if not result:
                 return r_info
@@ -268,7 +267,7 @@ def ledMainStatus():
         time_out -= 1
         if time_out <= 0:
             return buildResponse(False, "Device Time Out!")
-        if time_out % 100 != 0:
+        if time_out % 500 == 0:
             result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
             if not result:
                 return r_info
