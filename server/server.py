@@ -242,9 +242,13 @@ def ledStatus():
 
     led_status = [] 
     for i in range(0, len(conn_dic[dev_id].data.led_status)):
-        led_status.append({'id': i, 'status': conn_dic[dev_id].data.led_status[i]})
+        if (conn_dic[dev_id].data.led_status[i] > 0):
+            led_status.append({'id': i, 'status': 1})
+        else:
+            led_status.append({'id': i, 'status': 0})
 
     r_info = buildResponse(True, '', 'LEDStatus', led_status)
+    
 
     return r_info
 
