@@ -544,6 +544,8 @@ def ackPackHandler(pack, conn_data):
             result += str(ack & (0x01 << i)) + ','
             if (ack & (0x01 << i)) > 0:
                 conn_data.led_status[i] = 1
+            else:
+                conn_data.led_status[i] = 0
         logger.info(result)
         conn_data.sem_update.release()
     else:
