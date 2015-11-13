@@ -232,7 +232,8 @@ def ledStatus():
     
     dev_id = int(request.query.ID)
     
-    result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
+#    result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
+    result = True
     
     if not result:
         return r_info
@@ -268,7 +269,8 @@ def ledMainStatus():
 
     dev_id = int(request.query.ID)
 
-    result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
+#    result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
+    result = True
 
     if not result:
         return r_info
