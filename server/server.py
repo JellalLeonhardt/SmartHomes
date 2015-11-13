@@ -54,13 +54,18 @@ logger = logging.getLogger('server')
 logger.setLevel(logging.DEBUG)
 fh = logging.handlers.RotatingFileHandler('server.log', 'w', 1024*1024*100, 10)
 fh.setLevel(logging.DEBUG)
+fh_info = logging.handlers.RotatingFileHandler("server_info.log", 'w',
+        1024*1024*100, 10)
+fh_info.setLevel(logging.INFO)
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 formatter = logging.Formatter('[%(asctime)s][%(name)s][%(levelname)s]: %(message)s')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
+fh_info.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
+logger.addHandler(fh_info)
 
 #const val table
 XRANDR = {
