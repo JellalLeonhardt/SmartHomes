@@ -11,6 +11,8 @@ import struct
 import _thread
 import threading
 import logging
+import time
+
 PACK_FORMAT = '@bbhhH'
 DATA_FORMAT = '@i'
 
@@ -249,6 +251,7 @@ class DeviceConn:
     def __del__(self):
         if not self.__thread_stop:
             self.stopRecvData()  
+        self.close()
 
     def registHandler(self, pack_type, handle_func):
         self.__handler_dic[pack_type] = handle_func;
@@ -280,6 +283,7 @@ class DeviceConn:
             if pack == None:
                 self.logger.warning('Device disconnected!')
                 self.__thread_stop = True
+                self.close()
                 return
 
             #Call the handler if registed
@@ -294,6 +298,7 @@ class DeviceConn:
 
     def send(self, pack):
         if self.__sock == None:
+            self.logger.warning('empty socket')
             return False
         
         pack.calcChecksum()
@@ -354,6 +359,8 @@ class DeviceConn:
                 pass
             self.close()
             return None
+        except AttributeError as e:
+            return None
 
         self.logger.info('recv head:\t' + str(buf))
         return PhyPack(buf)
@@ -366,6 +373,9 @@ class DeviceConn:
         wrong_head_counter = 0
 
         pack = self.__recvHead()
+        if pack == None:
+            self.logger.warning('cannot recv head')
+            return None
         while self.__checkHead(pack) == False:    #Recieved a wrong head
             self.logger.warning('Wrong head data! Finding new head...')
             #Limit numbers of wrong head
@@ -399,6 +409,8 @@ class DeviceConn:
                     pass
                 self.close()
                 return None
+            except AttributeError as e:
+                return None
 
             self.logger.debug('recv data len: ' + str(len(temp_buf)))
             last_len -= len(temp_buf)
@@ -406,9 +418,13 @@ class DeviceConn:
         return pack
      
     def close(self):
+        self.stopRecvData()
+        time.sleep(0.1)
         if self.__sock == None:
             return
         self.__sock.close()
+        self.__sock = None
+        self.logger.warning('socket closed')
 
     def getAddr(self):
         return self.__addr

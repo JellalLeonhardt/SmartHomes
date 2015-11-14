@@ -133,6 +133,9 @@ def getDevList():
     devs = [] 
     for dev_id in dev_list.values():
         devs.append(str(dev_id))
+        conn_dic[dev_id].close()
+        conn_dic.pop(dev_id)
+
     r_info = buildResponse(True, '', 'devList', devs)
     return r_info
 
@@ -454,7 +457,7 @@ def sendCmd(dev_id, cmd_code, cmd_data):
     if dev_id in conn_dic.keys():
         result = conn_dic[dev_id].send(pack)
     else:
-        logger.warning('Acquiring unavaliable device! Acquiring dev ' + str(dev_id))
+        logger.warning('Acquiring unavaliable device! Acquiring dev ' + str(dev_id) + 'and list: ' + str(conn_dic.keys()))
         return False, buildResponse(False, 'Device Not Found!')
     
     if not result:
@@ -479,6 +482,7 @@ def buildResponse(status, msg, ex_data_name = None, ex_data = None):
     return response
 
 def initDev(dev_id):
+    logger.info('init dev')
     dev_status = conn_dic[dev_id].data
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CHANGE_SIZE, XRANDR[dev_status.xrandr])
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_WHITE_BALANCE, WHITE_BALANCE[dev_status.white])
@@ -515,15 +519,16 @@ def run_phy_server(addr, ID):
             continue
         
         logger.info('ID: ' + str(dev_id))
+        conn_lock.acquire()
+        conn_dic[dev_id] = conn
+        conn_lock.release()
+        dev_list[ip] = dev_id
         if dev_id == ID_counter:
-            conn_lock.acquire()
-            conn_dic[ID_counter] = conn
-            conn_lock.release()
-            dev_list[ip] = dev_id
             ID_counter += 1
         
         #Todo...
         #Open picture strem at beginning
+        logger.info('open picture stream')
         sendCmd(dev_id, phy_com.CTRL_CAMERA_STREAM, phy_com.CAMERA_STREAM_ON)
         initDev(dev_id)
         conn.startRecvData()
