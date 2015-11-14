@@ -238,16 +238,16 @@ def ledStatus():
     if not result:
         return r_info
  
-    time_out = TIME_OUT
-    while not conn_dic[dev_id].data.sem_update.acquire(False):
-        time.sleep(0.001)
-        time_out -= 1
-        if time_out <= 0:
-            return buildResponse(False, 'Device Time Out!') 
-        if time_out % 500 == 0:
-            result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
-            if not result:
-                return r_info
+#    time_out = TIME_OUT
+#    while not conn_dic[dev_id].data.sem_update.acquire(False):
+#        time.sleep(0.001)
+#        time_out -= 1
+#        if time_out <= 0:
+#            return buildResponse(False, 'Device Time Out!') 
+#        if time_out % 500 == 0:
+#            result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
+#            if not result:
+#                return r_info
 
     led_status = [] 
     for i in range(0, len(conn_dic[dev_id].data.led_status)):
@@ -275,16 +275,16 @@ def ledMainStatus():
     if not result:
         return r_info
 
-    time_out = TIME_OUT
-    while not conn_dic[dev_id].data.sem_update.acquire(False):
-        time.sleep(0.001)
-        time_out -= 1
-        if time_out <= 0:
-            return buildResponse(False, "Device Time Out!")
-        if time_out % 500 == 0:
-            result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
-            if not result:
-                return r_info
+#    time_out = TIME_OUT
+#    while not conn_dic[dev_id].data.sem_update.acquire(False):
+#        time.sleep(0.001)
+#        time_out -= 1
+#        if time_out <= 0:
+#            return buildResponse(False, "Device Time Out!")
+#        if time_out % 500 == 0:
+#            result, r_info = sendCmd(dev_id, phy_com.CTRL_LED_GET_STATUS, 0)
+#            if not result:
+#                return r_info
 
 
     main_status = 0
@@ -561,7 +561,7 @@ def ackPackHandler(pack, conn_data):
             else:
                 conn_data.led_status[i] = 0
         logger.info(result)
-        conn_data.sem_update.release()
+#        conn_data.sem_update.release()
     else:
         logger.warning('Wrong ack code! code = ' + str(pack.code))
 
