@@ -474,12 +474,19 @@ def buildResponse(status, msg, ex_data_name = None, ex_data = None):
 def initDev(dev_id):
     dev_status = conn_dic[dev_id].data
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CHANGE_SIZE, XRANDR[dev_status.xrandr])
+    time.sleep(0.01)
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_WHITE_BALANCE, WHITE_BALANCE[dev_status.white])
+    time.sleep(0.01)
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_EFFECTS, EFFECTS[dev_status.effect])
+    time.sleep(0.01)
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_EXPLOSURE, EXPLOSURE[dev_status.explosure])
+    time.sleep(0.01)
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_SATURATION, SATURATION[dev_status.saturation])
+    time.sleep(0.01)
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_LIGHTNESS, LIGHTNESS[dev_status.lightness])
+    time.sleep(0.01)
     result, r_info = sendCmd(dev_id, phy_com.CTRL_CAMERA_CONTRAST, CONTRAST[dev_status.contrast])
+    time.sleep(0.01)
     #pass
 
 def run_phy_server(addr, ID):
