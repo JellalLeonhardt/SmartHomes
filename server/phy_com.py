@@ -309,6 +309,12 @@ class DeviceConn:
         except socket.error as e:
             self.logger.error('connot send the package')
             self.logger.error(e)
+            if e.errno == 104:
+                pass
+            elif e.errno == 32:
+                pass
+            else:
+                pass
             self.__sock.close()
             return False
 
@@ -340,6 +346,12 @@ class DeviceConn:
         except socket.error as e:
             self.logger.error('cannot recv package head data!!! buf: ' + str(buf))
             self.logger.error(e)
+            if e.errno == 104:
+                pass
+            elif e.errno == 32:
+                pass
+            else:
+                pass
             self.__sock.close()
             return None
 
@@ -379,6 +391,13 @@ class DeviceConn:
             except socket.error as e:
                 self.logger.error('cannot recv package data!!!')
                 self.logger.error(e)
+                if e.errno == 104:
+                    pass
+                elif e.errno == 32:
+                    pass
+                else:
+                    pass
+                self.close()
                 return None
 
             self.logger.debug('recv data len: ' + str(len(temp_buf)))
