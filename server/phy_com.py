@@ -315,7 +315,7 @@ class DeviceConn:
                 pass
             else:
                 pass
-            self.__sock.close()
+            self.close()
             return False
 
         self.logger.info('send data:\t' + str(buf))
@@ -344,7 +344,7 @@ class DeviceConn:
         try:
             buf = self.__sock.recv(8)
         except socket.error as e:
-            self.logger.error('cannot recv package head data!!! buf: ' + str(buf))
+            self.logger.error('cannot recv package head data!!!')
             self.logger.error(e)
             if e.errno == 104:
                 pass
@@ -352,7 +352,7 @@ class DeviceConn:
                 pass
             else:
                 pass
-            self.__sock.close()
+            self.close()
             return None
 
         self.logger.info('recv head:\t' + str(buf))
