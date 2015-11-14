@@ -143,6 +143,8 @@ def getSetting():
         return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(request.query.ID)
+    if not dev_id in conn_dic.keys():
+        return buildResponse(False, "Device not found!")
     dev_status = conn_dic[dev_id].data
 
     settings = {}
@@ -165,6 +167,9 @@ def getSettingByPost():
         return buildResponse(False, 'Wrong Parameter!')
 
     dev_id = int(bottle.request.POST.get('ID'))
+    if not dev_id in conn_dic.keys():
+        return buildResponse(False, 'Device not found!')
+
     dev_status = conn_dic[dev_id].data
 
     settings = {}
