@@ -309,6 +309,7 @@ class DeviceConn:
         except socket.error as e:
             self.logger.error('connot send the package')
             self.logger.error(e)
+            self.__sock.close()
             return False
 
         self.logger.info('send data:\t' + str(buf))
@@ -339,6 +340,7 @@ class DeviceConn:
         except socket.error as e:
             self.logger.error('cannot recv package head data!!! buf: ' + str(buf))
             self.logger.error(e)
+            self.__sock.close()
             return None
 
         self.logger.info('recv head:\t' + str(buf))
